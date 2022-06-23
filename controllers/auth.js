@@ -6,7 +6,7 @@ return	res.send("User logged in");
 const adduser = async(req,res) => {
     try {
         //checking the user already exist 
-        const { name,email,password} = req.body;
+        const { name,email} = req.body;
 
         const user = await pool.query("SELECT * FROM users WHERE user_email = $1", [
             email
@@ -17,8 +17,8 @@ const adduser = async(req,res) => {
         }
         
         // adding new user
-        const newUser = await pool.query("INSERT INTO users (user_name,user_email,user_password) VALUES ($1,$2,$3)",
-        [name,email,password]
+        const newUser = await pool.query("INSERT INTO users (user_name,user_email,user_password) VALUES ($1,$2,'welcome@123')",
+        [name,email]
         );
         res.send("user added");
     
