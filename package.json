@@ -10,9 +10,13 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "bcrypt": "^5.0.1",
     "dotenv": "^16.0.1",
     "express": "^4.18.1",
-    "nodemon": "^2.0.16",
+    "generate-password": "^1.7.0",
     "pg": "^8.7.3"
+  },
+  "devDependencies" : {
+    "nodemon": "^2.0.16"
   }
 }
