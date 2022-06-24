@@ -21,7 +21,8 @@ const adduser = async (req, res) => {
       numbers: true,
     });
 
-    console.log(password);
+    //only for development purpose this needs to removed later
+    // console.log(password);
     //encrption of the password
 
     const salt = await bcrypt.genSalt(10);
