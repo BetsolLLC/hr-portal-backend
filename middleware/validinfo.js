@@ -5,18 +5,14 @@ const validinfo = function (req, res, next) {
     return /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email);
   }
 
-  if (req.path === "/register") {
+  if (req.path === "/addusers") {
     console.log(!email.length);
-    if (![email, name, password].every(Boolean)) {
-      return res.json("Missing Credentials");
-    } else if (!validEmail(email)) {
-      return res.json("Invalid Email");
+    if (!validEmail(email)) {
+      return errorResponse(res, 400, "Invalid email");
     }
   } else if (req.path === "/login") {
-    if (![email, password].every(Boolean)) {
-      return res.json("Missing Credentials");
-    } else if (!validEmail(email)) {
-      return res.json("Invalid Email");
+    if (!validEmail(email)) {
+      return errorResponse(res, 400, "Invalid email");
     }
   }
 

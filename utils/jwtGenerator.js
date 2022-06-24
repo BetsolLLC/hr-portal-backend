@@ -1,15 +1,21 @@
 import { createRequire } from "module";
 const require = createRequire(import.meta.url);
-import jwt from 'jsonwebtoken';
+import jwt from "jsonwebtoken";
 require("dotenv").config();
 
-function jwtGenerator(id) {
+const roles = ["standard"];
+function jwtGenerator(id, name, email) {
   const payload = {
     user: {
-      id: id
-    }
+      id,
+      name,
+      email,
+      roles,
+    },
   };
-  return jwt.sign(payload, process.env.jwtsecret, { expiresIn: "1h" });
+  return jwt.sign(payload, process.env.JWTSECRET, {
+    expiresIn: process.env.TOKEN_EXPIRY,
+  });
 }
 
 export default jwtGenerator;
