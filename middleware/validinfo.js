@@ -1,3 +1,5 @@
+import { successResponse } from "../interceptor/success.js";
+import { errorResponse } from "../interceptor/error.js";
 const validinfo = function (req, res, next) {
   const { email, name, password } = req.body;
 

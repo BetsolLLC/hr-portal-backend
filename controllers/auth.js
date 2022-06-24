@@ -3,6 +3,7 @@ import bcrypt from "bcrypt";
 import generator from "generate-password";
 import jwtGenerator from "../utils/jwtGenerator.js";
 import { successResponse } from "../interceptor/success.js";
+import { errorResponse } from "../interceptor/error.js";
 const SALT = 10;
 const adduser = async (req, res) => {
   try {
