@@ -25,7 +25,7 @@ const adduser = async (req, res) => {
     });
 
     //only for development purpose this needs to removed later
-    console.log(password);
+    // console.log(password);
     //encrption of the password
 
     const salt = await bcrypt.genSalt(SALT);
@@ -74,7 +74,6 @@ const login = async (req, res) => {
     const { password, ...user1 } = user.rows[0];
     return successResponse(res, 200, { jwtToken, ...user1 });
   } catch (err) {
-    console.log(err);
     return errorResponse(res, 500, "server error");
   }
 };
@@ -109,7 +108,6 @@ const updatepassword = async (req, res) => {
 
     return successResponse(res, 200, "password updated");
   } catch (err) {
-    console.log(err);
     return errorResponse(res, 500, "server error");
   }
 };
