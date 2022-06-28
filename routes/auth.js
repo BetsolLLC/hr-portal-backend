@@ -7,6 +7,7 @@ import adduser from "../controllers/auth.js";
 import validinfo from "../middleware/validinfo.js";
 import { updatepassword } from "../controllers/auth.js";
 
+
 // login-route
 router.post("/login", validinfo, login);
 
@@ -15,4 +16,5 @@ router.post("/addusers", validinfo, adduser);
 
 //adding the update password route
 router.post("/forgotpassword", updatepassword);
+
 export default router;
