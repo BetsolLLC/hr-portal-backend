@@ -18,7 +18,7 @@ export async function mailer(email, password) {
     subject: "Hello ✔", // Subject line
     text: `Hey From th Betsol Team!/n Your login Credentials are given below/n
     Your username: ${email}/n Your password is: ${password}`, // plain text body
-    html: `<H1>Hey From the Betsol Team!</H1>
+    html: `<H1>Hey from the Betsol Team!</H1>
     <h2>Your login Credentials are given below</h2>
     <p>Your Username: ${email}<br>
     Your password is: ${password}</p>`, // html body
