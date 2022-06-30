@@ -4,7 +4,6 @@ import generator from "generate-password";
 import jwtGenerator from "../utils/jwtGenerator.js";
 import { successResponse } from "../interceptor/success.js";
 import { errorResponse } from "../interceptor/error.js";
-import { mailer } from "../Services/mailer.js";
 const SALT = 10;
 const adduser = async (req, res) => {
   try {
@@ -40,10 +39,9 @@ const adduser = async (req, res) => {
       "INSERT INTO users (name,email,batch,phone_number,password) VALUES ($1,$2,$3,$4,$5)",
       [name, email, batch, number, bcryptPassword]
     );
-    await mailer(email, password);
+
     return successResponse(res, 201, "user added");
   } catch (err) {
-    console.log("err", err);
     return errorResponse(res, 500, "server error");
   }
 };
