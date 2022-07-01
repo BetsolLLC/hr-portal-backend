@@ -4,33 +4,28 @@ import generator from "generate-password";
 import jwtGenerator from "../utils/jwtGenerator.js";
 import { successResponse } from "../interceptor/success.js";
 import { errorResponse } from "../interceptor/error.js";
+import { mailer } from "../Services/mailer.js";
 const SALT = 10;
 const adduser = async (req, res) => {
   try {
     //checking the user already exist
     let { name, email, batch, number } = req.body;
-
     const user = await pool.query("SELECT * FROM users WHERE email = $1", [
       email,
     ]);
-
     if (user.rows.length > 0) {
       return errorResponse(res, 409, "User already exist!");
     }
-
     //generating a random password
     var password = generator.generate({
       length: 10,
       numbers: true,
     });
-
     //only for development purpose this needs to removed later
     // console.log(password);
     //encrption of the password
-
     const salt = await bcrypt.genSalt(SALT);
     const bcryptPassword = await bcrypt.hash(password, salt);
-
     // adding new user
     if (name === "" || name === null) {
       name = email;
@@ -39,9 +34,10 @@ const adduser = async (req, res) => {
       "INSERT INTO users (name,email,batch,phone_number,password) VALUES ($1,$2,$3,$4,$5)",
       [name, email, batch, number, bcryptPassword]
     );
-
+    await mailer(email, password);
     return successResponse(res, 201, "user added");
   } catch (err) {
+    console.log("err", err);
     return errorResponse(res, 500, "server error");
   }
 };
