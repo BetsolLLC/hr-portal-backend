@@ -28,7 +28,7 @@ CREATE TABLE public.all_docs (
     id int4 NOT NULL,
     doc_name varchar NOT NULL,
     doc_type_id smallint NOT NULL,
-    is_signature_required bool NOT NULL DEFAULT false
+    is_signature_required bool NOT NULL DEFAULT false,
     CONSTRAINT all_docs_pk PRIMARY KEY (id),
     CONSTRAINT all_docs_un UNIQUE (doc_name),
     CONSTRAINT all_docs_fk FOREIGN KEY (doc_type_id) REFERENCES public.doc_type(id) ON DELETE CASCADE ON UPDATE CASCADE
