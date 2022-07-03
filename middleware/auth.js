@@ -1,11 +1,7 @@
-import { createRequire } from "module";
-const require = createRequire(import.meta.url);
-const jwt = require("jsonwebtoken");
-require("dotenv").config();
-import { successResponse } from "../interceptor/success.js";
-import { errorResponse } from "../interceptor/error.js";
+import jwt from "jsonwebtoken";
+import { JWTSECRET } from "../config/config.js";
 
-//this middleware will on continue on if the token is inside the local storage
+import { errorResponse } from "../interceptor/error.js";
 
 module.exports = function (req, res, next) {
   // Get token from header
@@ -18,7 +14,7 @@ module.exports = function (req, res, next) {
 
   // Verify token
   try {
-    const verify = jwt.verify(token, process.env.JWTSECRET);
+    const verify = jwt.verify(token, JWTSECRET);
 
     req.user = verify.user;
     next();

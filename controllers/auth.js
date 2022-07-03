@@ -1,4 +1,4 @@
-import pool from "../db.js";
+import db from "../db.js";
 import bcrypt from "bcrypt";
 import generator from "generate-password";
 import jwtGenerator from "../utils/jwtGenerator.js";
@@ -10,7 +10,7 @@ const adduser = async (req, res) => {
     //checking the user already exist
     let { name, email, batch, number } = req.body;
 
-    const user = await pool.query("SELECT * FROM users WHERE email = $1", [
+    const user = await db.query("SELECT * FROM users WHERE email = $1", [
       email,
     ]);
 
@@ -35,7 +35,7 @@ const adduser = async (req, res) => {
     if (name === "" || name === null) {
       name = email;
     }
-    const newUser = await pool.query(
+    const newUser = await db.query(
       "INSERT INTO users (name,email,batch,phone_number,password) VALUES ($1,$2,$3,$4,$5)",
       [name, email, batch, number, bcryptPassword]
     );
@@ -45,12 +45,11 @@ const adduser = async (req, res) => {
     return errorResponse(res, 500, "server error");
   }
 };
-// module.exports = router;
 
 const login = async (req, res) => {
   const { email, password: userpassword } = req.body;
   try {
-    const user = await pool.query("SELECT * FROM users WHERE email = $1", [
+    const user = await db.query("SELECT * FROM users WHERE email = $1", [
       email,
     ]);
 
@@ -81,7 +80,7 @@ const login = async (req, res) => {
 const updatepassword = async (req, res) => {
   const { email, oldpassword, newpassword } = req.body;
   try {
-    const user = await pool.query("SELECT * FROM users WHERE email = $1", [
+    const user = await db.query("SELECT * FROM users WHERE email = $1", [
       email,
     ]);
 
@@ -101,7 +100,7 @@ const updatepassword = async (req, res) => {
     const salt = await bcrypt.genSalt(SALT);
     const bcryptPassword = await bcrypt.hash(newpassword, salt);
 
-    const newUser = await pool.query(
+    const newUser = await db.query(
       "update users set password=$1 where email=$2",
       [bcryptPassword, email]
     );
