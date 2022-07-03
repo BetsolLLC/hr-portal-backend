@@ -1,92 +1,113 @@
-import pool from "../db.js";
+import db from "../db.js";
 import bcrypt from "bcrypt";
 import generator from "generate-password";
 import jwtGenerator from "../utils/jwtGenerator.js";
+import { logger } from "../logger.js";
+import { ROLES, SALT } from "../config/config.js";
 import { successResponse } from "../interceptor/success.js";
 import { errorResponse } from "../interceptor/error.js";
-const SALT = 10;
+
 const adduser = async (req, res) => {
+  logger.defaultMeta = { ...logger.defaultMeta, source: "controller.adduser" };
+  let { name, email, batch, number } = req.body;
+  if (name === "" || name === null) {
+    name = email;
+  }
+
   try {
-    //checking the user already exist
-    let { name, email, batch, number } = req.body;
+    // checking the user already exist
+    {
+      const user = await db.query("SELECT * FROM users WHERE email = $1", [
+        email,
+      ]);
 
-    const user = await pool.query("SELECT * FROM users WHERE email = $1", [
-      email,
-    ]);
-
-    if (user.rows.length > 0) {
-      return errorResponse(res, 409, "User already exist!");
+      if (user.rows.length > 0) {
+        logger.debug(`user with email(${email}) is exists`);
+        return errorResponse(res, 409, "user already exist");
+      }
     }
 
-    //generating a random password
+    // generating a random password
     var password = generator.generate({
       length: 10,
       numbers: true,
     });
 
-    //only for development purpose this needs to removed later
+    // only for development purpose this needs to removed later
     // console.log(password);
-    //encrption of the password
 
+    // hashing password
     const salt = await bcrypt.genSalt(SALT);
     const bcryptPassword = await bcrypt.hash(password, salt);
 
-    // adding new user
-    if (name === "" || name === null) {
-      name = email;
-    }
-    const newUser = await pool.query(
+    // adding user to DB
+    const newUser = await db.query(
       "INSERT INTO users (name,email,batch,phone_number,password) VALUES ($1,$2,$3,$4,$5)",
       [name, email, batch, number, bcryptPassword]
     );
 
+    logger.debug(`user(${email}) add successfully`);
     return successResponse(res, 201, "user added");
   } catch (err) {
-    return errorResponse(res, 500, "server error");
+    logger.error(`error adding user: ${err}`);
+    return errorResponse(res, 500, "error adding user");
   }
 };
-// module.exports = router;
 
 const login = async (req, res) => {
+  logger.defaultMeta = { ...logger.defaultMeta, source: "controller.login" };
   const { email, password: userpassword } = req.body;
+
   try {
-    const user = await pool.query("SELECT * FROM users WHERE email = $1", [
+    const users = await db.query("SELECT * FROM users WHERE email = $1", [
       email,
     ]);
 
-    if (user.rows.length === 0) {
-      return errorResponse(res, 400, "Invalid Credential");
+    if (users.rows.length === 0) {
+      logger.debug(`user with email(${email}) not found in db`);
+      return errorResponse(res, 400, "invalid credential");
     }
 
     const validPassword = await bcrypt.compare(
       userpassword,
-      user.rows[0].password
+      users.rows[0].password
     );
 
     if (!validPassword) {
-      return errorResponse(res, 400, "Invalid Credential");
+      logger.debug(`invalid credintials for user(${email})`);
+      return errorResponse(res, 400, "invalid credential");
     }
     const jwtToken = jwtGenerator(
-      user.rows[0].id,
-      user.rows[0].name,
-      user.rows[0].email
+      users.rows[0].id,
+      users.rows[0].name,
+      users.rows[0].email,
+      ROLES.END_USER
     );
-    const { password, ...user1 } = user.rows[0];
-    return successResponse(res, 200, { jwtToken, ...user1 });
+    const { password, ...user } = users.rows[0];
+
+    return successResponse(res, 200, { jwtToken, ...user });
   } catch (err) {
+    logger.error(`error validating user credentials: ${err}`);
     return errorResponse(res, 500, "server error");
   }
 };
 
 const updatepassword = async (req, res) => {
-  const { email, oldpassword, newpassword } = req.body;
+  logger.defaultMeta = {
+    ...logger.defaultMeta,
+    source: "controller.updatepassword",
+  };
+  const { oldpassword, newpassword } = req.body;
+  const { email } = req.context;
+
   try {
-    const user = await pool.query("SELECT * FROM users WHERE email = $1", [
+    const user = await db.query("SELECT * FROM users WHERE email = $1", [
       email,
     ]);
 
     if (user.rows.length === 0) {
-      return errorResponse(res, 400, "Invalid Credential");
+      logger.debug(`user with email(${email}) not found in db`);
+      return errorResponse(res, 400, "invalid credential");
     }
 
     const validPassword = await bcrypt.compare(
@@ -95,23 +116,24 @@ const updatepassword = async (req, res) => {
     );
 
     if (!validPassword) {
-      return errorResponse(res, 400, "Invalid Credential");
+      logger.debug(`invalid credintials for user(${email})`);
+      return errorResponse(res, 400, "invalid credential");
     }
 
     const salt = await bcrypt.genSalt(SALT);
     const bcryptPassword = await bcrypt.hash(newpassword, salt);
 
-    const newUser = await pool.query(
-      "update users set password=$1 where email=$2",
-      [bcryptPassword, email]
-    );
+    await db.query("update users set password=$1 where email=$2", [
+      bcryptPassword,
+      email,
+    ]);
 
+    logger.debug(`updated user(${email}) credentials successfully`);
     return successResponse(res, 200, "password updated");
   } catch (err) {
+    logger.error(`error updating user credentials: ${err}`);
     return errorResponse(res, 500, "server error");
   }
 };
 
-export { updatepassword, login };
-
-export default adduser;
+export { adduser, updatepassword, login };

@@ -1,28 +1,44 @@
-import { createRequire } from "module";
-const require = createRequire(import.meta.url);
-const jwt = require("jsonwebtoken");
-require("dotenv").config();
-import { successResponse } from "../interceptor/success.js";
+import jwt from "jsonwebtoken";
+import { logger } from "../logger.js";
+import { JWTSECRET, ROLES } from "../config/config.js";
 import { errorResponse } from "../interceptor/error.js";
 
-//this middleware will on continue on if the token is inside the local storage
+const authMiddleware = (isAdmin) => {
+  logger.defaultMeta = {
+    ...logger.defaultMeta,
+    source: "middleware.authMiddleware",
+  };
 
-module.exports = function (req, res, next) {
-  // Get token from header
-  const token = req.header("jwt_token");
+  return (req, res, next) => {
+    // check if not token
+    const token = req.header("access_token");
+    if (!token) {
+      logger.debug(`token not present in the header 'access_token'`);
+      return errorResponse(res, 403, "authorization denied");
+    }
 
-  // Check if not token
-  if (!token) {
-    return res.status(403).json({ msg: "authorization denied" });
-  }
+    try {
+      // verify token
+      const verify = jwt.verify(token, JWTSECRET);
+      if (!verify || !verify.user) {
+        logger.debug(`invalid token/payload`);
+        return errorResponse(res, 403, "invalid token");
+      }
 
-  // Verify token
-  try {
-    const verify = jwt.verify(token, process.env.JWTSECRET);
+      req.context = verify.user;
 
-    req.user = verify.user;
-    next();
-  } catch (err) {
-    return errorResponse(res, 409, "Invalid Token");
-  }
+      // checking user role
+      if (!verify.user.role || (isAdmin && verify.user.role !== ROLES.ADMIN)) {
+        logger.debug(`insufficient permission`);
+        return errorResponse(res, 403, "insufficient permission");
+      }
+
+      next();
+    } catch (err) {
+      logger.error(`error validating token`);
+      return errorResponse(res, 500, "error validating token");
+    }
+  };
 };
+
+export { authMiddleware };
