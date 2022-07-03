@@ -10,8 +10,10 @@ const loadEnv = (key) => {
 };
 
 // Server Config
+const SALT = 10;
 const ENV = loadEnv(process.env.ENV);
 const PORT = loadEnv(process.env.PORT);
+const LOG_LEVEL = loadEnv(process.env.LOG_LEVEL);
 
 // Roles
 const ROLES = { END_USER: "user", ADMIN: "admin" };
@@ -34,6 +36,8 @@ const AWS_SECRET_ACCESS_KEY = loadEnv(process.env.AWS_SECRET_ACCESS_KEY);
 export {
   ENV,
   PORT,
+  SALT,
+  LOG_LEVEL,
   ROLES,
   DB_HOST,
   DB_PORT,
