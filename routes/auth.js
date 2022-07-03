@@ -1,18 +1,27 @@
-// These lines make "require" available
-import { createRequire } from "module";
-const require = createRequire(import.meta.url);
-const router = require("express").Router();
-import { login } from "../controllers/auth.js";
-import adduser from "../controllers/auth.js";
+import express from "express";
+import adduser, { updatepassword, login } from "../controllers/auth.js";
 import validinfo from "../middleware/validinfo.js";
-import { updatepassword } from "../controllers/auth.js";
+import { authMiddleware } from "../middleware/auth.js";
+
+const isAdminOnlyRoute = true;
+const authRouter = express.Router();
 
 // login-route
-router.post("/login", validinfo, login);
+authRouter.post("/login", validinfo, login);
 
-// adding the user-router
-router.post("/addusers", validinfo, adduser);
+// adding the user-route
+authRouter.post(
+  "/addusers",
+  authMiddleware(isAdminOnlyRoute),
+  validinfo,
+  adduser
+);
 
 //adding the update password route
-router.post("/forgotpassword", updatepassword);
-export default router;
+authRouter.post(
+  "/forgotpassword",
+  authMiddleware(!isAdminOnlyRoute),
+  updatepassword
+);
+
+export default authRouter;

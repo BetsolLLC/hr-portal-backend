@@ -1,24 +1,34 @@
 import jwt from "jsonwebtoken";
-import { JWTSECRET } from "../config/config.js";
-
+import { JWTSECRET, ROLES } from "../config/config.js";
 import { errorResponse } from "../interceptor/error.js";
 
-module.exports = function (req, res, next) {
-  // Get token from header
-  const token = req.header("jwt_token");
+const authMiddleware = (isAdmin) => {
+  return (req, res, next) => {
+    // check if not token
+    const token = req.header("access_token");
+    if (!token) {
+      return errorResponse(res, 403, "authorization denied");
+    }
 
-  // Check if not token
-  if (!token) {
-    return res.status(403).json({ msg: "authorization denied" });
-  }
+    try {
+      // verify token
+      const verify = jwt.verify(token, JWTSECRET);
+      if (!verify || !verify.user) {
+        return errorResponse(res, 403, "invalid token");
+      }
 
-  // Verify token
-  try {
-    const verify = jwt.verify(token, JWTSECRET);
+      req.context = verify.user;
 
-    req.user = verify.user;
-    next();
-  } catch (err) {
-    return errorResponse(res, 409, "Invalid Token");
-  }
+      // checking user role
+      if (!verify.user.role || (isAdmin && verify.user.role !== ROLES.ADMIN)) {
+        return errorResponse(res, 403, "authorization denied");
+      }
+
+      next();
+    } catch (err) {
+      return errorResponse(res, 403, "invalid token");
+    }
+  };
 };
+
+export { authMiddleware };

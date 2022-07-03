@@ -2,6 +2,7 @@ import db from "../db.js";
 import bcrypt from "bcrypt";
 import generator from "generate-password";
 import jwtGenerator from "../utils/jwtGenerator.js";
+import { ROLES } from "../config/config.js";
 import { successResponse } from "../interceptor/success.js";
 import { errorResponse } from "../interceptor/error.js";
 const SALT = 10;
@@ -68,7 +69,8 @@ const login = async (req, res) => {
     const jwtToken = jwtGenerator(
       user.rows[0].id,
       user.rows[0].name,
-      user.rows[0].email
+      user.rows[0].email,
+      ROLES.END_USER
     );
     const { password, ...user1 } = user.rows[0];
     return successResponse(res, 200, { jwtToken, ...user1 });
@@ -78,7 +80,9 @@ const login = async (req, res) => {
 };
 
 const updatepassword = async (req, res) => {
-  const { email, oldpassword, newpassword } = req.body;
+  const { oldpassword, newpassword } = req.body;
+  const { email } = req.context;
+
   try {
     const user = await db.query("SELECT * FROM users WHERE email = $1", [
       email,

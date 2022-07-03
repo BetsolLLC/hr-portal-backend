@@ -13,6 +13,9 @@ const loadEnv = (key) => {
 const ENV = loadEnv(process.env.ENV);
 const PORT = loadEnv(process.env.PORT);
 
+// Roles
+const ROLES = { END_USER: "user", ADMIN: "admin" };
+
 // Database Config
 const DB_HOST = loadEnv(process.env.DB_HOST);
 const DB_PORT = loadEnv(process.env.DB_PORT);
@@ -31,6 +34,7 @@ const AWS_SECRET_ACCESS_KEY = loadEnv(process.env.AWS_SECRET_ACCESS_KEY);
 export {
   ENV,
   PORT,
+  ROLES,
   DB_HOST,
   DB_PORT,
   DB_USER,
