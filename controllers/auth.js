@@ -9,36 +9,38 @@ import { errorResponse } from "../interceptor/error.js";
 
 const adduser = async (req, res) => {
   logger.defaultMeta = { ...logger.defaultMeta, source: "controller.adduser" };
+  let { name, email, batch, number } = req.body;
+  if (name === "" || name === null) {
+    name = email;
+  }
+
   try {
-    //checking the user already exist
-    let { name, email, batch, number } = req.body;
+    // checking the user already exist
+    {
+      const user = await db.query("SELECT * FROM users WHERE email = $1", [
+        email,
+      ]);
 
-    const user = await db.query("SELECT * FROM users WHERE email = $1", [
-      email,
-    ]);
-
-    if (user.rows.length > 0) {
-      logger.debug(`user with email(${email}) is exists`);
-      return errorResponse(res, 409, "user already exist");
+      if (user.rows.length > 0) {
+        logger.debug(`user with email(${email}) is exists`);
+        return errorResponse(res, 409, "user already exist");
+      }
     }
 
-    //generating a random password
+    // generating a random password
     var password = generator.generate({
       length: 10,
       numbers: true,
     });
 
-    //only for development purpose this needs to removed later
+    // only for development purpose this needs to removed later
     // console.log(password);
-    //encrption of the password
 
+    // hashing password
     const salt = await bcrypt.genSalt(SALT);
     const bcryptPassword = await bcrypt.hash(password, salt);
 
-    // adding new user
-    if (name === "" || name === null) {
-      name = email;
-    }
+    // adding user to DB
     const newUser = await db.query(
       "INSERT INTO users (name,email,batch,phone_number,password) VALUES ($1,$2,$3,$4,$5)",
       [name, email, batch, number, bcryptPassword]
@@ -54,8 +56,8 @@ const adduser = async (req, res) => {
 
 const login = async (req, res) => {
   logger.defaultMeta = { ...logger.defaultMeta, source: "controller.login" };
-
   const { email, password: userpassword } = req.body;
+
   try {
     const users = await db.query("SELECT * FROM users WHERE email = $1", [
       email,
@@ -121,10 +123,10 @@ const updatepassword = async (req, res) => {
     const salt = await bcrypt.genSalt(SALT);
     const bcryptPassword = await bcrypt.hash(newpassword, salt);
 
-    const newUser = await db.query(
-      "update users set password=$1 where email=$2",
-      [bcryptPassword, email]
-    );
+    await db.query("update users set password=$1 where email=$2", [
+      bcryptPassword,
+      email,
+    ]);
 
     logger.debug(`updated user(${email}) credentials successfully`);
     return successResponse(res, 200, "password updated");
@@ -134,6 +136,4 @@ const updatepassword = async (req, res) => {
   }
 };
 
-export { updatepassword, login };
-
-export default adduser;
+export { adduser, updatepassword, login };

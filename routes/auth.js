@@ -1,5 +1,5 @@
 import express from "express";
-import adduser, { updatepassword, login } from "../controllers/auth.js";
+import { adduser, updatepassword, login } from "../controllers/auth.js";
 import validinfo from "../middleware/validinfo.js";
 import { authMiddleware } from "../middleware/auth.js";
 
