@@ -1,7 +1,8 @@
 import express from "express";
-import { adduser, updatepassword, login } from "../controllers/auth.js";
+import { adduser, updatepassword, login ,docname } from "../controllers/auth.js";
 import validinfo from "../middleware/validinfo.js";
 import { authMiddleware } from "../middleware/auth.js";
+
 
 const isAdminOnlyRoute = true;
 const authRouter = express.Router();
@@ -23,5 +24,8 @@ authRouter.post(
   authMiddleware(!isAdminOnlyRoute),
   updatepassword
 );
+
+//adding the docname to frontend route
+authRouter.get("/docname",authMiddleware(!isAdminOnlyRoute),docname)
 
 export default authRouter;
