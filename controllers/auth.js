@@ -136,36 +136,39 @@ const updatepassword = async (req, res) => {
   }
 };
 
-const docname= async(req,res) => {
+const docname = async (req, res) => {
   let ID = req.context.id;
-  try{
-    const doc = await db.query("select * from all_docs where all_docs.doc_type_id = 1")
-    const uploadedfile = await db.query("select all_docs_id, doc_ref from users join uploaded_docs on users.id = uploaded_docs.user_id where users.id = $1 ",[ID])
+  try {
+    const doc = await db.query(
+      "select * from all_docs where all_docs.doc_type_id = 1"
+    );
+    const uploadedfile = await db.query(
+      "select all_docs_id, doc_ref from users join uploaded_docs on users.id = uploaded_docs.user_id where users.id = $1 ",
+      [ID]
+    );
     let n = [];
     let map = {};
-    for(let i=0;i<doc.rowCount;i++){
-      map={
-        id:doc.rows[i].id,
-        docname:doc.rows[i].doc_name,
-        uploaded:false,
-        doc_ref:null,
-      }
-      n.push(map) 
+    for (let i = 0; i < doc.rowCount; i++) {
+      map = {
+        id: doc.rows[i].id,
+        docname: doc.rows[i].doc_name,
+        uploaded: false,
+        doc_ref: null,
+      };
+      n.push(map);
       console.log(ID);
     }
-    for(let i=0;i<n.length;i++){
-      for(let j=0;j<uploadedfile.rowCount;j++){
-        if(n[i].id==uploadedfile.rows[j].all_docs_id){
-          n[i].uploaded=true,
-          n[i].doc_ref=uploadedfile.rows[j].doc_ref
-        }   
-     }
+    for (let i = 0; i < n.length; i++) {
+      for (let j = 0; j < uploadedfile.rowCount; j++) {
+        if (n[i].id === uploadedfile.rows[j].all_docs_id) {
+          (n[i].uploaded = true), (n[i].doc_ref = uploadedfile.rows[j].doc_ref);
+        }
+      }
     }
-    successResponse(res,200,n)
-  }
-  catch(err){
+    successResponse(res, 200, n);
+  } catch (err) {
     logger.error(`error getting document name: ${err}`);
     return errorResponse(res, 500, "server error");
   }
-}
-export { adduser, updatepassword, login , docname};
+};
+export { adduser, updatepassword, login, docname };
