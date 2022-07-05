@@ -34,7 +34,7 @@ const adduser = async (req, res) => {
     });
 
     // only for development purpose this needs to removed later
-    // console.log(password);
+     //console.log(password);
 
     // hashing password
     const salt = await bcrypt.genSalt(SALT);
@@ -135,7 +135,7 @@ const updatepassword = async (req, res) => {
     return errorResponse(res, 500, "server error");
   }
 };
-//api 
+//api  for getting the user detail for admin
 const getusers=async(req,res)=>{
   try{
       
