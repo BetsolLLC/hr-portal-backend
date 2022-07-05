@@ -34,6 +34,7 @@ const adduser = async (req, res) => {
     });
 
     // only for development purpose this needs to removed later
+
     //  console.log(password);
 
     // hashing password
@@ -135,40 +136,51 @@ const updatepassword = async (req, res) => {
     return errorResponse(res, 500, "server error");
   }
 };
-
-const docname = async (req, res) => {
-  let ID = req.context.id;
-  try {
-    const doc = await db.query(
-      "select * from all_docs where all_docs.doc_type_id = 1"
-    );
-    const uploadedfile = await db.query(
-      "select all_docs_id, doc_ref from users join uploaded_docs on users.id = uploaded_docs.user_id where users.id = $1 ",
-      [ID]
-    );
-    let n = [];
-    let map = {};
-    for (let i = 0; i < doc.rowCount; i++) {
-      map = {
-        id: doc.rows[i].id,
-        docname: doc.rows[i].doc_name,
-        uploaded: false,
-        doc_ref: null,
-      };
-      n.push(map);
-      console.log(ID);
-    }
-    for (let i = 0; i < n.length; i++) {
-      for (let j = 0; j < uploadedfile.rowCount; j++) {
-        if (n[i].id === uploadedfile.rows[j].all_docs_id) {
-          (n[i].uploaded = true), (n[i].doc_ref = uploadedfile.rows[j].doc_ref);
-        }
-      }
-    }
-    successResponse(res, 200, n);
-  } catch (err) {
-    logger.error(`error getting document name: ${err}`);
-    return errorResponse(res, 500, "server error");
+//api  for getting the user detail for admin
+const getusers=async(req,res)=>
+{
+  try{
+      
+     const allTodos=await db.query("  select u.name,u.email,u.phone_number,array_to_string(array_agg(ad.doc_name), ',') as list_of_document,array_agg(ad.id)AS document_id from users u,uploaded_docs ud,all_docs ad WHERE (u.id=ud.user_id) AND (ud.all_docs_id= ad.id) GROUP BY u.name,u.email,u.phone_number ;"); 
+     res.json(allTodos.rows);
+     
   }
-};
-export { adduser, updatepassword, login, docname };
+  catch(err)
+  {
+      console.error(err.message);
+  }
+}
+
+  const docname= async(req,res) => {
+    let ID = req.context.id;
+    try{
+      const doc = await db.query("select * from all_docs where all_docs.doc_type_id = 1")
+      const uploadedfile = await db.query("select all_docs_id, doc_ref from users join uploaded_docs on users.id = uploaded_docs.user_id where users.id = $1 ",[ID])
+      let n = [];
+      let map = {};
+      for(let i=0;i<doc.rowCount;i++){
+        map={
+          id:doc.rows[i].id,
+          docname:doc.rows[i].doc_name,
+          uploaded:false,
+          doc_ref:null,
+        }
+        n.push(map) 
+        console.log(ID);
+      }
+      for(let i=0;i<n.length;i++){
+        for(let j=0;j<uploadedfile.rowCount;j++){
+          if(n[i].id==uploadedfile.rows[j].all_docs_id){
+            n[i].uploaded=true,
+            n[i].doc_ref=uploadedfile.rows[j].doc_ref
+          }   
+       }
+      }
+      successResponse(res,200,n)
+    }
+    catch(err){
+      logger.error(`error getting document name: ${err}`);
+      return errorResponse(res, 500, "server error");
+    }
+  }
+  export { adduser, updatepassword, login , docname,getusers}
