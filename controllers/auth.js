@@ -141,7 +141,7 @@ const getusers=async(req,res)=>
 {
   try{
       
-     const allTodos=await db.query("  select u.name,u.email,u.phone_number,array_to_string(array_agg(ad.doc_name), ',') as list_of_document,array_agg(ad.id)AS document_id ,COUNT(ad.id) AS no_of_docs from users u,uploaded_docs ud,all_docs ad WHERE (u.id=ud.user_id) AND (ud.all_docs_id= ad.id) GROUP BY u.name,u.email,u.phone_number ;"); 
+     const allTodos=await db.query(" select u.name,u.email,u.phone_number,array_to_string(array_agg(ad.doc_name), ',') as list_of_document,array_agg(ad.id)AS document_id,array_to_string(array_agg(ud.doc_ref), ',') as doc_ref ,COUNT(ad.id) AS no_of_docs from users u,uploaded_docs ud,all_docs ad WHERE (u.id=ud.user_id) AND (ud.all_docs_id= ad.id) GROUP BY u.name,u.email,u.phone_number ;"); 
      //res.json(allTodos.rows);
      return successResponse(res,200,allTodos.rows);
      

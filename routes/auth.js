@@ -34,7 +34,7 @@ authRouter.get("/docname",authMiddleware(!isAdminOnlyRoute),docname)
 
 authRouter.get(
   "/users",
-  authMiddleware(isAdminOnlyRoute),
+ // authMiddleware(isAdminOnlyRoute),
   getusers
 );
 export default authRouter;
