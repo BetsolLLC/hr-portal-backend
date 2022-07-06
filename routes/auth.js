@@ -27,7 +27,7 @@ authRouter.post(
 //adding the update password route
 authRouter.post(
   "/forgotpassword",
-  //authMiddleware(!isAdminOnlyRoute),
+  authMiddleware(!isAdminOnlyRoute),
   updatepassword
 );
 
