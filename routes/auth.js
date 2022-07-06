@@ -4,7 +4,7 @@ import {
   updatepassword,
   login,
   docname,
-  files,
+  uploadFile,
 } from "../controllers/auth.js";
 import { upload } from "../middleware/fileMiddleware.js";
 import validinfo from "../middleware/validinfo.js";
@@ -40,6 +40,6 @@ authRouter.post(
   authMiddleware(!isAdminOnlyRoute),
   upload.single("file"),
   validinfo,
-  files
+  uploadFile
 );
 export default authRouter;

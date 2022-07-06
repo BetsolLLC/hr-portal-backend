@@ -176,14 +176,16 @@ const docname = async (req, res) => {
 
 //uploading the file
 
-const files = async (req, res) => {
+const uploadFile = async (req, res) => {
   try {
-    let file = req.file;
-    let user_id = req.context.id;
-    let doc_id = req.query.id;
+    const file = req.file;
+    const user_id = req.context.id;
+    const doc_id = req.query.id;
     let error,
       key = await getFileUploadPath(doc_id, req.context);
     if (error) {
+      logger.error(`Error document is invalid ${error}`)
+      console.log(err);
       return errorResponse(res, 400, "Invalid document");
     }
     const result = await S3Uploadv2(file, key);
@@ -205,4 +207,4 @@ const files = async (req, res) => {
   }
 };
 
-export { adduser, updatepassword, login, docname, files };
+export { adduser, updatepassword, login, docname, uploadFile };
