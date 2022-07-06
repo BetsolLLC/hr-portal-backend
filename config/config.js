@@ -35,6 +35,7 @@ const AWS_SECRET_ACCESS_KEY = loadEnv(process.env.AWS_SECRET_ACCESS_KEY);
 const AWS_BUCKET = loadEnv(process.env.AWS_BUCKET);
 const AWS_REGION = loadEnv(process.env.AWS_REGION);
 const FILE_SIZE = loadEnv(process.env.FILE_SIZE);
+const FROM_EMAIL = loadEnv(process.env.FROM_EMAIL);
 // Upload doc configs
 const UPLOAD_FILE_ALGORITHM = loadEnv(process.env.UPLOAD_FILE_ALGORITHM);
 const UPLOAD_FILE_SECRET = loadEnv(process.env.UPLOAD_FILE_SECRET);
@@ -60,4 +61,6 @@ export {
   UPLOAD_FILE_SIGNATURE_VALIDITY_IN_SECONDS,
   AWS_BUCKET,
   FILE_SIZE,
+  AWS_REGION,
+  FROM_EMAIL,
 };

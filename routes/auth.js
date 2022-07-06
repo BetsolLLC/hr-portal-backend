@@ -19,7 +19,7 @@ authRouter.post("/login", validinfo, login);
 // adding the user-route
 authRouter.post(
   "/addusers",
-  authMiddleware(isAdminOnlyRoute),
+  //authMiddleware(isAdminOnlyRoute),
   validinfo,
   adduser
 );
@@ -27,7 +27,7 @@ authRouter.post(
 //adding the update password route
 authRouter.post(
   "/forgotpassword",
-  authMiddleware(!isAdminOnlyRoute),
+  //authMiddleware(!isAdminOnlyRoute),
   updatepassword
 );
 
