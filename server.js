@@ -5,6 +5,7 @@ import authRoutes from "./routes/auth.js";
 import { inits3 } from "./service/s3.js";
 import multer from "multer";
 import { errorResponse } from "./interceptor/error.js";
+import filesRoutes from "./routes/files.js";
 
 inits3();
 
@@ -12,7 +13,10 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
+
 app.use("/api/auth", authRoutes);
+app.use("/api/files", filesRoutes);
+
 app.use((error, req, res, next) => {
   if (error instanceof multer.MulterError) {
     if (error.code === "LIMIT_FILE_SIZE") {
