@@ -1,8 +1,14 @@
 import express from "express";
-import { adduser, updatepassword, login ,docname } from "../controllers/auth.js";
+import {
+  adduser,
+  updatepassword,
+  login,
+  docname,
+  uploadFile,
+} from "../controllers/auth.js";
+import { upload } from "../middleware/fileMiddleware.js";
 import validinfo from "../middleware/validinfo.js";
 import { authMiddleware } from "../middleware/auth.js";
-
 
 const isAdminOnlyRoute = true;
 const authRouter = express.Router();
@@ -26,6 +32,14 @@ authRouter.post(
 );
 
 //adding the docname to frontend route
-authRouter.get("/docname",authMiddleware(!isAdminOnlyRoute),docname)
+authRouter.get("/docname", authMiddleware(!isAdminOnlyRoute), docname);
 
+//adding the upload routes
+authRouter.post(
+  "/upload",
+  authMiddleware(!isAdminOnlyRoute),
+  upload.single("file"),
+  validinfo,
+  uploadFile
+);
 export default authRouter;

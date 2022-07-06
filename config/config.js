@@ -32,7 +32,9 @@ const TOKEN_EXPIRY = loadEnv(process.env.TOKEN_EXPIRY);
 // AWS S3 Config
 const AWS_ACCESS_KEY_ID = loadEnv(process.env.AWS_ACCESS_KEY_ID);
 const AWS_SECRET_ACCESS_KEY = loadEnv(process.env.AWS_SECRET_ACCESS_KEY);
-
+const AWS_BUCKET = loadEnv(process.env.AWS_BUCKET);
+const AWS_REGION = loadEnv(process.env.AWS_REGION);
+const FILE_SIZE = loadEnv(process.env.FILE_SIZE);
 // Upload doc configs
 const UPLOAD_FILE_ALGORITHM = loadEnv(process.env.UPLOAD_FILE_ALGORITHM);
 const UPLOAD_FILE_SECRET = loadEnv(process.env.UPLOAD_FILE_SECRET);
@@ -56,4 +58,6 @@ export {
   UPLOAD_FILE_ALGORITHM,
   UPLOAD_FILE_SECRET,
   UPLOAD_FILE_SIGNATURE_VALIDITY_IN_SECONDS,
+  AWS_BUCKET,
+  FILE_SIZE,
 };

@@ -3,9 +3,11 @@ import bcrypt from "bcrypt";
 import generator from "generate-password";
 import jwtGenerator from "../utils/jwtGenerator.js";
 import { logger } from "../logger.js";
-import { ROLES, SALT } from "../config/config.js";
+import { ROLES, SALT, AWS_BUCKET } from "../config/config.js";
 import { successResponse } from "../interceptor/success.js";
 import { errorResponse } from "../interceptor/error.js";
+import { S3Uploadv2 } from "../service/s3.js";
+import { getFileUploadPath } from "./helper.js";
 
 const adduser = async (req, res) => {
   logger.defaultMeta = { ...logger.defaultMeta, source: "controller.adduser" };
@@ -80,6 +82,7 @@ const login = async (req, res) => {
     const jwtToken = jwtGenerator(
       users.rows[0].id,
       users.rows[0].name,
+      users.rows[0].batch,
       users.rows[0].email,
       ROLES.END_USER
     );
@@ -156,7 +159,6 @@ const docname = async (req, res) => {
         doc_ref: null,
       };
       n.push(map);
-      console.log(ID);
     }
     for (let i = 0; i < n.length; i++) {
       for (let j = 0; j < uploadedfile.rowCount; j++) {
@@ -171,4 +173,38 @@ const docname = async (req, res) => {
     return errorResponse(res, 500, "server error");
   }
 };
-export { adduser, updatepassword, login, docname };
+
+//uploading the file
+
+const uploadFile = async (req, res) => {
+  try {
+    const file = req.file;
+    const user_id = req.context.id;
+    const doc_id = req.query.id;
+    let error,
+      key = await getFileUploadPath(doc_id, req.context);
+    if (error) {
+      logger.error(`Error document is invalid ${error}`)
+      console.log(err);
+      return errorResponse(res, 400, "Invalid document");
+    }
+    const result = await S3Uploadv2(file, key);
+    let check = await db.query(
+      "select * from uploaded_docs where all_docs_id = $1 and user_id = $2",
+      [doc_id, user_id]
+    );
+    if (check.rowCount === 0) {
+      let upload_doc = await db.query(
+        "INSERT INTO  uploaded_docs VALUES ($1,$2,$3) ",
+        [user_id, doc_id, result.Location]
+      );
+    }
+
+    return successResponse(res, 200, "document uploaded successfully");
+  } catch (err) {
+    logger.error(`error in uploading the file ${err}`);
+    return errorResponse(res, 500, "error in uploading document");
+  }
+};
+
+export { adduser, updatepassword, login, docname, uploadFile };
