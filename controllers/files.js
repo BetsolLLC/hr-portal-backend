@@ -5,7 +5,7 @@ import { S3Download } from "../service/s3.js";
 import { getFileNameFromPath } from "./helper.js";
 import { errorResponse } from "../interceptor/error.js";
 import { successResponse } from "../interceptor/success.js";
-import { MAX_FILE_DOWNLOAD_COUNT } from "../config/config.js";
+import { MAX_FILE_DOWNLOAD_COUNT, ROLES } from "../config/config.js";
 
 // downloadFile function is not used
 const downloadFile = async (req, res) => {
@@ -66,8 +66,16 @@ const downloadFiles = async (req, res) => {
     source: "controller.downloadFiles",
   };
 
-  const { id: userId, email } = req.context;
+  let { id: userId, email, role } = req.context;
   let { documentIds } = req.body;
+
+  if (role === ROLES.ADMIN) {
+    if (!req.body.userId) {
+      logger.debug(`missing user id(${req.body.userId}) and role is(${role})`);
+      return errorResponse(res, 400, "missing required params");
+    }
+    userId = req.body.user;
+  }
 
   if (!userId || !documentIds || !email) {
     logger.debug(

@@ -1,5 +1,5 @@
 import db from "../db.js";
-import { errorResponse } from "../interceptor/error.js";
+
 const getFileUploadPath = async (doc_id, user) => {
   const details = await db.query(
     "SELECT doc_name FROM all_docs where id = $1",
