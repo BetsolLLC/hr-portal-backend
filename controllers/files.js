@@ -68,23 +68,26 @@ const downloadFiles = async (req, res) => {
 
   let { id: userId, email, role } = req.context;
   let { documentIds } = req.body;
+  let isBulkDownload = false;
 
   if (role === ROLES.ADMIN) {
     if (!req.body.userId) {
       logger.debug(`missing user id(${req.body.userId}) and role is(${role})`);
       return errorResponse(res, 400, "missing required params");
     }
-    userId = req.body.user;
+    userId = req.body.userId;
+    isBulkDownload =
+      !req.query.bulk || req.query.bulk !== "true" ? false : true;
   }
 
-  if (!userId || !documentIds || !email) {
+  if (!userId || (!isBulkDownload && !documentIds) || !email) {
     logger.debug(
       `missing documentIds(${documentIds}) or user id(${userId}) or email(${email})`
     );
     return errorResponse(res, 400, "missing required params");
   }
 
-  if (documentIds.length > MAX_FILE_DOWNLOAD_COUNT) {
+  if (!isBulkDownload && documentIds.length > MAX_FILE_DOWNLOAD_COUNT) {
     logger.debug(
       `got (${documentIds.length}) files to download, downloading first (${MAX_FILE_DOWNLOAD_COUNT}) valid files`
     );
@@ -96,16 +99,26 @@ const downloadFiles = async (req, res) => {
     // checking the document exist
     let documents;
     {
-      const documentRes = await db.query(
-        "SELECT * FROM uploaded_docs WHERE user_id = $1 and all_docs_id = ANY($2::int[])",
-        [userId, documentIds]
-      );
+      let sqlQuery =
+        "SELECT * FROM uploaded_docs WHERE user_id = $1" +
+        "and all_docs_id = ANY($2::int[])";
+      let sqlQueryParams = [userId, documentIds];
 
+      // get all uploaded files of the user
+      if (isBulkDownload) {
+        logger.debug(
+          `bulk download is ${isBulkDownload} so downloading all the files uploaded by user(${email})`
+        );
+        sqlQuery = "SELECT * FROM uploaded_docs WHERE user_id = $1";
+        sqlQueryParams = [userId];
+      }
+
+      const documentRes = await db.query(sqlQuery, sqlQueryParams);
       if (!documentRes || documentRes.rowCount == 0) {
         return successResponse(
           res,
           400,
-          `not document to download for user(${email}) for the provided ids(${documentIds})`
+          `no document to download for user(${email}) for the provided ids(${documentIds})`
         );
       }
 
