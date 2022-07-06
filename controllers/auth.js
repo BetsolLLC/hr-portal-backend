@@ -184,8 +184,7 @@ const uploadFile = async (req, res) => {
     let error,
       key = await getFileUploadPath(doc_id, req.context);
     if (error) {
-      logger.error(`Error document is invalid ${error}`)
-      console.log(err);
+      logger.error(`Error document is invalid ${error}`);
       return errorResponse(res, 400, "Invalid document");
     }
     const result = await S3Uploadv2(file, key);
@@ -196,7 +195,7 @@ const uploadFile = async (req, res) => {
     if (check.rowCount === 0) {
       let upload_doc = await db.query(
         "INSERT INTO  uploaded_docs VALUES ($1,$2,$3) ",
-        [user_id, doc_id, result.Location]
+        [user_id, doc_id, key]
       );
     }
 
