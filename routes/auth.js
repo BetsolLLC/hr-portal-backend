@@ -19,7 +19,7 @@ authRouter.post("/login", validinfo, login);
 // adding the user-route
 authRouter.post(
   "/addusers",
-  //authMiddleware(isAdminOnlyRoute),
+  authMiddleware(isAdminOnlyRoute),
   validinfo,
   adduser
 );
