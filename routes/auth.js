@@ -37,7 +37,7 @@ authRouter.get("/docname", authMiddleware(!isAdminOnlyRoute), docname);
 //adding the upload routes
 authRouter.post(
   "/upload",
-  authMiddleware(!isAdminOnlyRoute),
+   authMiddleware(!isAdminOnlyRoute),
   upload.single("file"),
   validinfo,
   uploadFile
