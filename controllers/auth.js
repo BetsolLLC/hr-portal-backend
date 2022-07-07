@@ -224,4 +224,41 @@ const uploadFile = async (req, res) => {
   }
 };
 
-export { adduser, updatepassword, login, docname, uploadFile };
+const userDetails = async (req,res) => {
+    try{
+      const userDetails = await db.query("select id,name,email,phone_number from users;")
+      let details = [] ;
+      let map={}
+      for(let i=0;i<userDetails.rowCount;i++){
+        
+        map = {
+            id : userDetails.rows[i].id,
+            Username : userDetails.rows[i].name,
+            email : userDetails.rows[i].email,
+            Phone_no : userDetails.rows[i].phone_number,
+          }
+          details.push(map)
+      }
+      for(let i=0;i<details.length;i++){
+        let docs = []
+        let ID = details[i].id 
+        const docDetails = await db.query("select ud.all_docs_id,ad.doc_name from uploaded_docs ud, all_docs ad where ud.all_docs_id= ad.id and ud.user_id=$1",[ID])
+        for(let j=0;j<docDetails.rowCount;j++){
+            var doc = {
+              doc_id : docDetails.rows[j].all_docs_id,
+              docname : docDetails.rows[j].doc_name,
+            }
+            docs.push(doc) 
+          }
+          details[i].no_of_docs =  docDetails.rowCount
+          details[i].document = docs
+        }
+      return successResponse(res,200,details)
+      }
+  catch(err){
+     logger.error(`error in getting user details ${err}`);
+     return errorResponse(res,500,"error in getting the details")
+  }
+}
+
+export { adduser, updatepassword, login, docname, uploadFile,userDetails };
