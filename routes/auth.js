@@ -47,7 +47,7 @@ authRouter.post(
 //sending all users details to admin side
 authRouter.get(
   "/getUserDetails",
-  // authMiddleware(isAdminOnlyRoute),
+  authMiddleware(isAdminOnlyRoute),
   userDetails
 )
 export default authRouter;

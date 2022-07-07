@@ -226,9 +226,6 @@ const uploadFile = async (req, res) => {
 
 const userDetails = async (req,res) => {
     try{
-      // const allTodos=await db.query(" select u.name,u.email,u.phone_number,array_to_string(array_agg(ad.doc_name), ',') as list_of_document,array_agg(ad.id)AS document_id,array_to_string(array_agg(ud.doc_ref), ',') as doc_ref ,COUNT(ad.id) AS no_of_docs from users u,uploaded_docs ud,all_docs ad WHERE (u.id=ud.user_id) AND (ud.all_docs_id= ad.id) GROUP BY u.name,u.email,u.phone_number ;"); 
-      // console.log(allTodos.rows);
-
       const userDetails = await db.query("select id,name,email,phone_number from users;")
       let details = [] ;
       let map={}
@@ -242,8 +239,6 @@ const userDetails = async (req,res) => {
           }
           details.push(map)
       }
-      
-      // console.log(docDetails);
       for(let i=0;i<details.length;i++){
         let docs = []
         let ID = details[i].id 
@@ -258,13 +253,11 @@ const userDetails = async (req,res) => {
           details[i].no_of_docs =  docDetails.rowCount
           details[i].document = docs
         }
-      
-        res.send(details);
+      return successResponse(res,200,details)
       }
   catch(err){
-    // logger.error(`error in getting user details ${err}`);
-    // return errorResponse(res,500,"error in getting the details")
-    console.log(err);
+     logger.error(`error in getting user details ${err}`);
+     return errorResponse(res,500,"error in getting the details")
   }
 }
 
