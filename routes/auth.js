@@ -5,6 +5,7 @@ import {
   login,
   docname,
   uploadFile,
+  userDetails,
 } from "../controllers/auth.js";
 import { upload } from "../middleware/fileMiddleware.js";
 import validinfo from "../middleware/validinfo.js";
@@ -42,4 +43,11 @@ authRouter.post(
   validinfo,
   uploadFile
 );
+
+//sending all users details to admin side
+authRouter.get(
+  "/getUserDetails",
+  // authMiddleware(isAdminOnlyRoute),
+  userDetails
+)
 export default authRouter;
