@@ -84,7 +84,7 @@ const login = async (req, res) => {
       users.rows[0].name,
       users.rows[0].batch,
       users.rows[0].email,
-      ROLES.END_USER
+      users.rows[0].is_admin?ROLES.ADMIN:ROLES.END_USER,
     );
     const { password, ...user } = users.rows[0];
 

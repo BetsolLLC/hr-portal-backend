@@ -8,6 +8,7 @@ CREATE TABLE public.users (
     password varchar(255) NOT null,
     uploaded_pre_on_board_docs bool NULL DEFAULT false,
     uploaded_on_board_docs bool NULL DEFAULT false,
+    is_admin bool NULL DEFAULT false,
     CONSTRAINT pk_users PRIMARY KEY (id),
     CONSTRAINT un_users UNIQUE (email)
 );
