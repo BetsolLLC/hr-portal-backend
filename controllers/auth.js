@@ -8,6 +8,7 @@ import { successResponse } from "../interceptor/success.js";
 import { errorResponse } from "../interceptor/error.js";
 import { S3Uploadv2 } from "../service/s3.js";
 import { getFileUploadPath } from "./helper.js";
+import { mailer } from "../service/mailer.js";
 
 const adduser = async (req, res) => {
   logger.defaultMeta = { ...logger.defaultMeta, source: "controller.adduser" };
@@ -36,7 +37,7 @@ const adduser = async (req, res) => {
     });
 
     // only for development purpose this needs to removed later
-    //  console.log(password);
+    //console.log(password);
 
     // hashing password
     const salt = await bcrypt.genSalt(SALT);
@@ -49,6 +50,23 @@ const adduser = async (req, res) => {
     );
 
     logger.debug(`user(${email}) add successfully`);
+    const isMailSent = await mailer(email, password);
+    if (!isMailSent) {
+      logger.debug(`error sending  creadential mail to user: ${email}`);
+      try {
+        await db.query("DELETE FROM users WHERE email = $1", [email]);
+      } catch (err) {
+        logger.debug(`error deleting user: ${email} from DB`);
+        return errorResponse(res, 500, `error adding user`);
+      }
+
+      logger.debug(`deleted user${email} from DB`);
+      return errorResponse(res, 500, `error adding user`);
+    } else {
+      logger.debug(
+        `Credential mail sent to (${email}) successfully ${isMailSent}`
+      );
+    }
     return successResponse(res, 201, "user added");
   } catch (err) {
     logger.error(`error adding user: ${err}`);
