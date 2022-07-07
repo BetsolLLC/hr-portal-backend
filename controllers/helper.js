@@ -1,5 +1,5 @@
 import db from "../db.js";
-import { errorResponse } from "../interceptor/error.js";
+
 const getFileUploadPath = async (doc_id, user) => {
   const details = await db.query(
     "SELECT doc_name FROM all_docs where id = $1",
@@ -9,8 +9,13 @@ const getFileUploadPath = async (doc_id, user) => {
     return new Error("Invalid document"), null;
   }
   return (
-    null, `${user.batch}/${user.id}_${user.name}/${details.rows[0].doc_name}`
+    null, `${user.batch}/${user.id}_${user.email}/${details.rows[0].doc_name}`
   );
 };
 
-export { getFileUploadPath };
+const getFileNameFromPath = (path) => {
+  const pathArray = path.split("/");
+  return pathArray[pathArray.length - 1] + ".pdf";
+};
+
+export { getFileUploadPath, getFileNameFromPath };

@@ -102,7 +102,7 @@ const login = async (req, res) => {
       users.rows[0].name,
       users.rows[0].batch,
       users.rows[0].email,
-      ROLES.END_USER
+      users.rows[0].is_admin?ROLES.ADMIN:ROLES.END_USER,
     );
     const { password, ...user } = users.rows[0];
 
@@ -203,7 +203,6 @@ const uploadFile = async (req, res) => {
       key = await getFileUploadPath(doc_id, req.context);
     if (error) {
       logger.error(`Error document is invalid ${error}`);
-      console.log(err);
       return errorResponse(res, 400, "Invalid document");
     }
     const result = await S3Uploadv2(file, key);
@@ -214,7 +213,7 @@ const uploadFile = async (req, res) => {
     if (check.rowCount === 0) {
       let upload_doc = await db.query(
         "INSERT INTO  uploaded_docs VALUES ($1,$2,$3) ",
-        [user_id, doc_id, result.Location]
+        [user_id, doc_id, key]
       );
     }
 

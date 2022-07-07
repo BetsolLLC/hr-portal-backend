@@ -11,7 +11,15 @@ const S3Uploadv2 = async (file, key) => {
     Key: key,
     Body: file.buffer,
   };
-  return await s3.upload(param).promise();
+  return s3.upload(param).promise();
 };
 
-export { S3Uploadv2, inits3 };
+const S3Download = async (key) => {
+  const options = {
+    Bucket: AWS_BUCKET,
+    Key: key,
+  };
+  return s3.getObject(options).promise();
+};
+
+export { S3Uploadv2, inits3, S3Download };
