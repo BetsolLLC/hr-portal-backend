@@ -10,7 +10,7 @@ import {
 import { upload } from "../middleware/fileMiddleware.js";
 import validinfo from "../middleware/validinfo.js";
 import { authMiddleware } from "../middleware/auth.js";
-import {passwords} from "../middleware/validatePassword.js"
+import {validatePassword} from "../middleware/validatePassword.js"
 
 const isAdminOnlyRoute = true;
 const authRouter = express.Router();
@@ -30,7 +30,7 @@ authRouter.post(
 authRouter.post(
   "/forgotpassword",
   authMiddleware(!isAdminOnlyRoute),
-  passwords,
+  validatePassword,
   updatepassword
 );
 
