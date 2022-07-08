@@ -34,8 +34,8 @@ const AWS_ACCESS_KEY_ID = loadEnv(process.env.AWS_ACCESS_KEY_ID);
 const AWS_SECRET_ACCESS_KEY = loadEnv(process.env.AWS_SECRET_ACCESS_KEY);
 const AWS_BUCKET = loadEnv(process.env.AWS_BUCKET);
 const AWS_REGION = loadEnv(process.env.AWS_REGION);
-// const FILE_SIZE = loadEnv(process.env.FILE_SIZE);
 const FROM_EMAIL = loadEnv(process.env.FROM_EMAIL);
+const FORGOT_PASSWORD = loadEnv(process.env.FORGOT_PASSWORD);
 
 // Upload doc configs
 const FILE_SIZE = loadEnv(process.env.FILE_SIZE);
@@ -69,4 +69,5 @@ export {
   AWS_REGION,
   FROM_EMAIL,
   MAX_FILE_DOWNLOAD_COUNT,
+  FORGOT_PASSWORD,
 };

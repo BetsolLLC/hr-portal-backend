@@ -49,5 +49,5 @@ authRouter.get(
   "/getUserDetails",
   authMiddleware(isAdminOnlyRoute),
   userDetails
-)
+);
 export default authRouter;
