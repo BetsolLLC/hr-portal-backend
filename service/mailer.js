@@ -4,6 +4,7 @@ import {
   AWS_SECRET_ACCESS_KEY,
   AWS_REGION,
   FROM_EMAIL,
+  FORGOT_PASSWORD,
 } from "../config/config.js";
 const SES_CONFIG = {
   accessKeyId: AWS_ACCESS_KEY_ID,
@@ -11,9 +12,11 @@ const SES_CONFIG = {
   region: AWS_REGION,
 };
 
-export let mailer = async (email, password) => {
+export let mailer = async (name, email, token, password) => {
   let isMailSent = true;
   const AWS_SES = new AWS.SES(SES_CONFIG);
+  const SET_URL =
+    FORGOT_PASSWORD + `?token=${token}&oldpassword=${password}&email=${email}`;
   try {
     let params = {
       Source: FROM_EMAIL,
@@ -25,10 +28,9 @@ export let mailer = async (email, password) => {
         Body: {
           Html: {
             Charset: "UTF-8",
-            Data: `<H1>Hey from the Betsol Team!</H1>
-                    <h2>Your login Credentials are given below</h2>
-                    <p>Your Username: ${email}<br>
-                    Your password is: ${password}</p>`,
+            Data: `<H1>Hey ${name},</H1>
+                    <p><br>Here is the link to set up your password</p>
+                    <a href=${SET_URL}>SET PASSWORD</a>`,
           },
         },
         Subject: {

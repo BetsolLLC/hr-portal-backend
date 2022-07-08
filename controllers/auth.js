@@ -48,9 +48,10 @@ const adduser = async (req, res) => {
       "INSERT INTO users (name,email,batch,phone_number,password) VALUES ($1,$2,$3,$4,$5)",
       [name, email, batch, number, bcryptPassword]
     );
-
+    //using email as id in the token as id is not awailable
+    const token = jwtGenerator(email, name, batch, email, ROLES.END_USER);
     logger.debug(`user(${email}) add successfully`);
-    const isMailSent = await mailer(email, password);
+    const isMailSent = await mailer(name, email, token, password);
     if (!isMailSent) {
       logger.debug(`error sending  creadential mail to user: ${email}`);
       try {
@@ -97,12 +98,13 @@ const login = async (req, res) => {
       logger.debug(`invalid credintials for user(${email})`);
       return errorResponse(res, 400, "invalid credential");
     }
+
     const jwtToken = jwtGenerator(
       users.rows[0].id,
       users.rows[0].name,
       users.rows[0].batch,
       users.rows[0].email,
-      users.rows[0].is_admin?ROLES.ADMIN:ROLES.END_USER,
+      users.rows[0].is_admin ? ROLES.ADMIN : ROLES.END_USER
     );
     const { password, ...user } = users.rows[0];
 
@@ -224,41 +226,44 @@ const uploadFile = async (req, res) => {
   }
 };
 
-const userDetails = async (req,res) => {
-    try{
-      const userDetails = await db.query("select id,name,email,phone_number from users;")
-      let details = [] ;
-      let map={}
-      for(let i=0;i<userDetails.rowCount;i++){
-        
-        map = {
-            id : userDetails.rows[i].id,
-            Username : userDetails.rows[i].name,
-            email : userDetails.rows[i].email,
-            Phone_no : userDetails.rows[i].phone_number,
-          }
-          details.push(map)
+const userDetails = async (req, res) => {
+  try {
+    const userDetails = await db.query(
+      "select id,name,email,phone_number from users;"
+    );
+    let details = [];
+    let map = {};
+    for (let i = 0; i < userDetails.rowCount; i++) {
+      map = {
+        id: userDetails.rows[i].id,
+        Username: userDetails.rows[i].name,
+        email: userDetails.rows[i].email,
+        Phone_no: userDetails.rows[i].phone_number,
+      };
+      details.push(map);
+    }
+    for (let i = 0; i < details.length; i++) {
+      let docs = [];
+      let ID = details[i].id;
+      const docDetails = await db.query(
+        "select ud.all_docs_id,ad.doc_name from uploaded_docs ud, all_docs ad where ud.all_docs_id= ad.id and ud.user_id=$1",
+        [ID]
+      );
+      for (let j = 0; j < docDetails.rowCount; j++) {
+        var doc = {
+          doc_id: docDetails.rows[j].all_docs_id,
+          docname: docDetails.rows[j].doc_name,
+        };
+        docs.push(doc);
       }
-      for(let i=0;i<details.length;i++){
-        let docs = []
-        let ID = details[i].id 
-        const docDetails = await db.query("select ud.all_docs_id,ad.doc_name from uploaded_docs ud, all_docs ad where ud.all_docs_id= ad.id and ud.user_id=$1",[ID])
-        for(let j=0;j<docDetails.rowCount;j++){
-            var doc = {
-              doc_id : docDetails.rows[j].all_docs_id,
-              docname : docDetails.rows[j].doc_name,
-            }
-            docs.push(doc) 
-          }
-          details[i].no_of_docs =  docDetails.rowCount
-          details[i].document = docs
-        }
-      return successResponse(res,200,details)
-      }
-  catch(err){
-     logger.error(`error in getting user details ${err}`);
-     return errorResponse(res,500,"error in getting the details")
+      details[i].no_of_docs = docDetails.rowCount;
+      details[i].document = docs;
+    }
+    return successResponse(res, 200, details);
+  } catch (err) {
+    logger.error(`error in getting user details ${err}`);
+    return errorResponse(res, 500, "error in getting the details");
   }
-}
+};
 
-export { adduser, updatepassword, login, docname, uploadFile,userDetails };
+export { adduser, updatepassword, login, docname, uploadFile, userDetails };
