@@ -46,6 +46,8 @@ const UPLOAD_FILE_SIGNATURE_VALIDITY_IN_SECONDS = 120;
 // Download files configs
 const MAX_FILE_DOWNLOAD_COUNT = loadEnv(process.env.MAX_FILE_DOWNLOAD_COUNT);
 
+//blacklisted password
+const Blacklist = loadEnv(process.env.Blacklist)
 export {
   ENV,
   PORT,
@@ -69,5 +71,9 @@ export {
   AWS_REGION,
   FROM_EMAIL,
   MAX_FILE_DOWNLOAD_COUNT,
+
   FORGOT_PASSWORD,
+
+Blacklist,
+
 };
