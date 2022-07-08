@@ -216,6 +216,18 @@ const uploadFile = async (req, res) => {
         [user_id, doc_id, key]
       );
     }
+    // this is to check the total number of document in a type preonboarding on on-borading
+    let no_total_docs_uplaoed=db.query("SELECT COUNT(ud.user_id) FROM UPLOADED_DOCS WHERE UD.USER=$1",[user_id]);
+    let total_doc=await db.query("SELECT dt.toatl FROM doc_type dt WHERE dt.id=$1",[doc_type_id]);
+    if((total_doc==no_total_docs_uplaoed) &&(doc_type_id=1))//for pre-on borading
+    {
+      let uploaded_pre_onboarding_status =("UPDATE users SET uploaded_pre_on_board_docs='TRUE'WHERE id=$1",[user_id]);
+    }
+    if((total_doc==no_total_docs_uplaoed) &&(doc_type_id=2))//for onboarding
+    {
+      let uploaded_pre_onboarding_status =("UPDATE users SET uploaded_on_board_docs='TRUE'WHERE id=$1",[user_id]);
+    }
+
 
     return successResponse(res, 200, "document uploaded successfully");
   } catch (err) {
