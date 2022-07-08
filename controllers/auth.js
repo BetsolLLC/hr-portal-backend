@@ -37,7 +37,7 @@ const adduser = async (req, res) => {
     });
 
     // only for development purpose this needs to removed later
-    //console.log(password);
+    console.log(password);
 
     // hashing password
     const salt = await bcrypt.genSalt(SALT);
