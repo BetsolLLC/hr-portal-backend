@@ -23,11 +23,10 @@ const validinfo = function (req, res, next) {
   }
 
   if(req.path === "/addusers"){
-    if(number.length !== 13){
+    if(number.length !== 10){
   return errorResponse(res,400,"Invalid Phone number")
     }
   }
-
 
   next();
 };
