@@ -8,7 +8,7 @@ import { successResponse } from "../interceptor/success.js";
 import { errorResponse } from "../interceptor/error.js";
 import { S3Uploadv2 } from "../service/s3.js";
 import { getFileUploadPath } from "./helper.js";
-import { mailer,mailerAdmin } from "../service/mailer.js";
+import { mailer, mailerAdmin } from "../service/mailer.js";
 
 const adduser = async (req, res) => {
   logger.defaultMeta = { ...logger.defaultMeta, source: "controller.adduser" };
@@ -201,8 +201,6 @@ const uploadFile = async (req, res) => {
     const file = req.file;
     const user_id = req.context.id;
     const doc_id = req.query.id;
-    const doc_type_id=await db.query("select doc_type_id from all_docs where id=$1",[doc_id]).rows[0].doc_type_id;
-    
     let error,
       key = await getFileUploadPath(doc_id, req.context);
     if (error) {
@@ -220,55 +218,66 @@ const uploadFile = async (req, res) => {
         [user_id, doc_id, key]
       );
     }
-    // this is to check the total number of document in a type preonboarding on on-borading
-    let no_total_docs_uplaoed=await db.query("SELECT COUNT(*) FROM uploaded_docs ud WHERE user_id=$1 AND all_docs_id in (Select id from all_docs where doc_type_id=$2) ",[user_id,doc_type_id]);
-    let total_doc=await db.query("SELECT dt.total FROM doc_type dt WHERE dt.id=$1 ",[doc_type_id]);
-    
-    if((no_total_docs_uplaoed.rows[0].count==total_doc.rows[0].total) &&(doc_type_id===1))//for pre-on borading
-    {
-      let uploaded_pre_onboarding_status =await db.query("UPDATE users SET uploaded_pre_on_board_docs= $1 WHERE id=$2",[true,user_id]);
-     logger.debug(`sussesfull updated the pre-onboarding for user ${user_id}`);
-      try{
-      const name = req.context.name
-      const email = req.context.email
-      const preOnBoardingMail = await mailerAdmin(name,email);
-      if (!preOnBoardingMail) {
+    let adminEmail = [];
+    let admin = await db.query("select email from users where is_admin=true");
+    //storing email in a array for sending email
+    for (let i = 0; i < admin.rowCount; i++) {
+      adminEmail.push(admin.rows[i].email);
+    }
+    //check if user has uploaded all the documents - pre on boarding
+    let checkDocs1 = await db.query(
+      "select ud.all_docs_id,ad.doc_name from uploaded_docs ud, all_docs ad where ud.all_docs_id= ad.id and doc_type_id=1 and ud.user_id=$1",
+      [user_id]
+    );
+    let totaldocs1 = await db.query(
+      "select total from doc_type where doc_type_name='pre_on_boarding';"
+    );
+    if (checkDocs1.rowCount === totaldocs1.rows[0].total) {
+      try {
+        let uploaded_pre_onboarding_status = await db.query(
+          "UPDATE users SET uploaded_pre_on_board_docs= $1 WHERE id=$2",
+          [true, user_id]
+        );
+        const name = req.context.name;
+        const email = req.context.email;
+        const preOnBoardingMail = await mailerAdmin(name, email, adminEmail);
+        if (!preOnBoardingMail) {
+          logger.debug(`error sending mail to ADMIN: ${email}`);
+        } else {
+          logger.debug(
+            `sussesfull updated the pre-onboarding for user ${user_id}`
+          );
+          logger.debug(
+            ` mail sent to (${email}) successfully ${preOnBoardingMail}`
+          );
+        }
+      } catch (err) {
+        console.log(err);
+      }
+    }
+    //check if user has uploaded all the documents - on boarding
+    let checkDocs = await db.query(
+      "select ud.all_docs_id,ad.doc_name from uploaded_docs ud, all_docs ad where ud.all_docs_id= ad.id and doc_type_id=2 and ud.user_id=$1",
+      [user_id]
+    );
+    let totaldocs = await db.query(
+      "select total from doc_type where doc_type_name='on_boarding';"
+    );
+    if (checkDocs.rowCount === totaldocs.rows[0].total) {
+      let uploaded_pre_onboarding_status = await db.query(
+        "UPDATE users SET uploaded_on_board_docs=$1 WHERE id=$2",
+        [true, user_id]
+      );
+      const name = req.context.name;
+      const email = req.context.email;
+      const OnBoardingMail = await mailerAdmin(name, email, adminEmail);
+      if (!OnBoardingMail) {
         logger.debug(`error sending mail to ADMIN: ${email}`);
       } else {
-        logger.debug(
-          ` mail sent to (${email}) successfully ${preOnBoardingMail}`
-        );
+        logger.debug(`sussesfull updated the onboarding for user ${user_id}`);
+        logger.debug(` mail sent to (${email}) successfully ${OnBoardingMail}`);
       }
     }
-    catch(err){
-    console.log(err);
-  }
-}
-    
-    if((no_total_docs_uplaoed.rows[0].count==total_doc.rows[0].total) &&(doc_type_id===2))//for onboarding
-    {
-      let uploaded_pre_onboarding_status =await db.query("UPDATE users SET uploaded_on_board_docs=$1 WHERE id=$2",[true ,user_id]);
-      logger.debug(`sussesfull updated the onboarding for user ${user_id}`)
-      try{
-        if(checkDocs.rowCount ===  totaldocs.rows[0].total){
-          const name = req.context.name
-          const email = req.context.email
-          const OnBoardingMail = await mailerAdmin(name,email);
-          if (!OnBoardingMail) {
-            logger.debug(`error sending mail to ADMIN: ${email}`);
-          } else {
-            logger.debug(
-              ` mail sent to (${email}) successfully ${OnBoardingMail}`
-            );
-          }
-        }
-      }
-      catch(err){
-
-      }
-    }
-
-
     return successResponse(res, 200, "document uploaded successfully");
   } catch (err) {
     logger.error(`error in uploading the file ${err}`);

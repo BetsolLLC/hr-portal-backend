@@ -29,8 +29,8 @@ let mailer = async (name, email, token, password) => {
           Html: {
             Charset: "UTF-8",
             Data: `<H1>Hey ${name},</H1>
-                    <p><br>Here is the link to set up your password</p>
-                    <a href=${SET_URL}>SET PASSWORD</a>`,
+            <p><br>Here is the link to set up your password</p>
+            <a href=${SET_URL}>SET PASSWORD</a>`,
           },
         },
         Subject: {
@@ -47,14 +47,15 @@ let mailer = async (name, email, token, password) => {
   return isMailSent;
 };
 
-let mailerAdmin = async (name, email) => {
+let mailerAdmin = async (name, email, adminEmail) => {
+  console.log(adminEmail);
   let isMailSent = true;
   const AWS_SES = new AWS.SES(SES_CONFIG);
   try {
     let params = {
       Source: FROM_EMAIL,
       Destination: {
-        ToAddresses: ['bhanuprakashr129@gmail.com'],
+        ToAddresses: adminEmail,
       },
       //ReplyToAddresses: [],
       Message: {
@@ -79,5 +80,4 @@ let mailerAdmin = async (name, email) => {
   return isMailSent;
 };
 
-
-export {mailer,mailerAdmin};
+export { mailer, mailerAdmin };
