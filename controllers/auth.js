@@ -8,7 +8,7 @@ import { successResponse } from "../interceptor/success.js";
 import { errorResponse } from "../interceptor/error.js";
 import { S3Uploadv2 } from "../service/s3.js";
 import { getFileUploadPath } from "./helper.js";
-import { mailer } from "../service/mailer.js";
+import { mailer,mailerAdmin } from "../service/mailer.js";
 
 const adduser = async (req, res) => {
   logger.defaultMeta = { ...logger.defaultMeta, source: "controller.adduser" };
@@ -228,12 +228,44 @@ const uploadFile = async (req, res) => {
     {
       let uploaded_pre_onboarding_status =await db.query("UPDATE users SET uploaded_pre_on_board_docs= $1 WHERE id=$2",[true,user_id]);
      logger.debug(`sussesfull updated the pre-onboarding for user ${user_id}`);
+      try{
+      const name = req.context.name
+      const email = req.context.email
+      const preOnBoardingMail = await mailerAdmin(name,email);
+      if (!preOnBoardingMail) {
+        logger.debug(`error sending mail to ADMIN: ${email}`);
+      } else {
+        logger.debug(
+          ` mail sent to (${email}) successfully ${preOnBoardingMail}`
+        );
+      }
     }
+    catch(err){
+    console.log(err);
+  }
+}
+    
     if((no_total_docs_uplaoed.rows[0].count==total_doc.rows[0].total) &&(doc_type_id===2))//for onboarding
     {
       let uploaded_pre_onboarding_status =await db.query("UPDATE users SET uploaded_on_board_docs=$1 WHERE id=$2",[true ,user_id]);
       logger.debug(`sussesfull updated the onboarding for user ${user_id}`)
-      
+      try{
+        if(checkDocs.rowCount ===  totaldocs.rows[0].total){
+          const name = req.context.name
+          const email = req.context.email
+          const OnBoardingMail = await mailerAdmin(name,email);
+          if (!OnBoardingMail) {
+            logger.debug(`error sending mail to ADMIN: ${email}`);
+          } else {
+            logger.debug(
+              ` mail sent to (${email}) successfully ${OnBoardingMail}`
+            );
+          }
+        }
+      }
+      catch(err){
+
+      }
     }
 
 
