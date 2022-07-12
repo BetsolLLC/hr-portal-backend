@@ -61,7 +61,7 @@ let mailerAdmin = async (name, email, adminEmail) => {
         Body: {
           Html: {
             Charset: "UTF-8",
-            Data: `<H1>Hey ${name},</H1>
+            Data: `<H3>Hey ${name},</H3>
                     <p><br>The empolyee with name: ${name} email:${email} has uploaded all the document. </p>`,
           },
         },

@@ -22,9 +22,11 @@ const validinfo = function (req, res, next) {
     }
   }
 
-  if(req.path === "/addusers"){
-    if(number.length !== 10){
-  return errorResponse(res,400,"Invalid Phone number")
+  if (req.path === "/addusers") {
+    if (number.length !== 10) {
+      return errorResponse(res, 400, "Invalid Phone number");
+    } else {
+      return errorResponse(res, 400, "Error in validing the phone number");
     }
   }
 
