@@ -48,7 +48,6 @@ let mailer = async (name, email, token, password) => {
 };
 
 let mailerAdmin = async (name, email, adminEmail) => {
-  console.log(adminEmail);
   let isMailSent = true;
   const AWS_SES = new AWS.SES(SES_CONFIG);
   try {
