@@ -1,6 +1,6 @@
 import PasswordValidator from 'password-validator'
 import { errorResponse } from '../interceptor/error.js';
-import { Blacklist } from '../config/config.js';
+import { BLACKLISTED_PASSWORDS } from '../config/config.js';
 var schema = new PasswordValidator;
 
 schema
@@ -11,7 +11,7 @@ schema
 .has().digits(1)                // Must have at least 1 digits
 .has().not().spaces()          // Should not have spaces
 .has().symbols(1)             //  Must have atleast one symbol
-.is().not().oneOf(Blacklist);// Blacklist these values
+.is().not().oneOf(BLACKLISTED_PASSWORDS);// Blacklist these values
 
 
 const validatePassword = function(req,res,next){
