@@ -5,7 +5,7 @@ const validEmail = (email) => {
 };
 
 const validinfo = function (req, res, next) {
-  const { email, password } = req.body;
+  const { email, number } = req.body;
 
   if (req.path === "/addusers" || req.path === "/login") {
     if (!validEmail(email)) {
