@@ -68,7 +68,7 @@ let mailerAdmin = async (name, email, adminEmail) => {
         },
         Subject: {
           Charset: "UTF-8",
-          Data: `All The Document Uploaded by ${name}!`,
+          Data: `All The Documents are Uploaded by ${name}!`,
         },
       },
     };
