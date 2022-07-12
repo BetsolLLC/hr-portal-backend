@@ -12,7 +12,7 @@ const SES_CONFIG = {
   region: AWS_REGION,
 };
 
-export let mailer = async (name, email, token, password) => {
+let mailer = async (name, email, token, password) => {
   let isMailSent = true;
   const AWS_SES = new AWS.SES(SES_CONFIG);
   const SET_URL =
@@ -29,8 +29,8 @@ export let mailer = async (name, email, token, password) => {
           Html: {
             Charset: "UTF-8",
             Data: `<H1>Hey ${name},</H1>
-                    <p><br>Here is the link to set up your password</p>
-                    <a href=${SET_URL}>SET PASSWORD</a>`,
+            <p><br>Here is the link to set up your password</p>
+            <a href=${SET_URL}>SET PASSWORD</a>`,
           },
         },
         Subject: {
@@ -41,7 +41,42 @@ export let mailer = async (name, email, token, password) => {
     };
     await AWS_SES.sendEmail(params).promise();
   } catch (err) {
+    console.log(err);
     isMailSent = false;
   }
   return isMailSent;
 };
+
+let mailerAdmin = async (name, email, adminEmail) => {
+  let isMailSent = true;
+  const AWS_SES = new AWS.SES(SES_CONFIG);
+  try {
+    let params = {
+      Source: FROM_EMAIL,
+      Destination: {
+        ToAddresses: adminEmail,
+      },
+      //ReplyToAddresses: [],
+      Message: {
+        Body: {
+          Html: {
+            Charset: "UTF-8",
+            Data: `<H1>Hey ${name},</H1>
+                    <p><br>The empolyee with name: ${name} email:${email} has uploaded all the document. </p>`,
+          },
+        },
+        Subject: {
+          Charset: "UTF-8",
+          Data: `All The Documents are Uploaded by ${name}!`,
+        },
+      },
+    };
+    await AWS_SES.sendEmail(params).promise();
+  } catch (err) {
+    console.log(err);
+    isMailSent = false;
+  }
+  return isMailSent;
+};
+
+export { mailer, mailerAdmin };
