@@ -201,6 +201,8 @@ const uploadFile = async (req, res) => {
     const file = req.file;
     const user_id = req.context.id;
     const doc_id = req.query.id;
+    const doc_type_id=await db.query("select doc_type_id from all_docs where id=$1",[doc_id]).rows[0].doc_type_id;
+    
     let error,
       key = await getFileUploadPath(doc_id, req.context);
     if (error) {
@@ -214,10 +216,26 @@ const uploadFile = async (req, res) => {
     );
     if (check.rowCount === 0) {
       let upload_doc = await db.query(
-        "INSERT INTO  uploaded_docs VALUES ($1,$2,$3) ",
+        "INSERT INTO uploaded_docs VALUES ($1,$2,$3) ",
         [user_id, doc_id, key]
       );
     }
+    // this is to check the total number of document in a type preonboarding on on-borading
+    let no_total_docs_uplaoed=await db.query("SELECT COUNT(*) FROM uploaded_docs ud WHERE user_id=$1 AND all_docs_id in (Select id from all_docs where doc_type_id=$2) ",[user_id,doc_type_id]);
+    let total_doc=await db.query("SELECT dt.total FROM doc_type dt WHERE dt.id=$1 ",[doc_type_id]);
+    
+    if((no_total_docs_uplaoed.rows[0].count==total_doc.rows[0].total) &&(doc_type_id===1))//for pre-on borading
+    {
+      let uploaded_pre_onboarding_status =await db.query("UPDATE users SET uploaded_pre_on_board_docs= $1 WHERE id=$2",[true,user_id]);
+     logger.debug(`sussesfull updated the pre-onboarding for user ${user_id}`);
+    }
+    if((no_total_docs_uplaoed.rows[0].count==total_doc.rows[0].total) &&(doc_type_id===2))//for onboarding
+    {
+      let uploaded_pre_onboarding_status =await db.query("UPDATE users SET uploaded_on_board_docs=$1 WHERE id=$2",[true ,user_id]);
+      logger.debug(`sussesfull updated the onboarding for user ${user_id}`)
+      
+    }
+
 
     return successResponse(res, 200, "document uploaded successfully");
   } catch (err) {
