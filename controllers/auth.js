@@ -292,7 +292,8 @@ const uploadFile = async (req, res) => {
 const userDetails = async (req, res) => {
   try {
     const userDetails = await db.query(
-      "select id,name,email,phone_number from users where is_admin = $1", [false]
+      "select id,name,email,phone_number from users where is_admin = $1",
+      [false]
     );
     let details = [];
     let map = {};
