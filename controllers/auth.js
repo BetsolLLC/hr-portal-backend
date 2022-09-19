@@ -3,13 +3,14 @@ import bcrypt from "bcrypt";
 import generator from "generate-password";
 import jwtGenerator from "../utils/jwtGenerator.js";
 import { logger } from "../logger.js";
-import { ROLES, SALT, AWS_BUCKET } from "../config/config.js";
+import { ROLES, SALT, AWS_BUCKET, DOC_FILL_SERVICE } from "../config/config.js";
 import { successResponse } from "../interceptor/success.js";
 import { errorResponse } from "../interceptor/error.js";
 import { S3Uploadv2 } from "../service/s3.js";
 import { getFileUploadPath } from "./helper.js";
 import { mailer, mailerAdmin } from "../service/mailer.js";
-
+import axios from "axios";
+import FormData from "form-data";
 const adduser = async (req, res) => {
   logger.defaultMeta = { ...logger.defaultMeta, source: "controller.adduser" };
   let { name, email, batch, number } = req.body;
@@ -29,6 +30,7 @@ const adduser = async (req, res) => {
         return errorResponse(res, 409, "user already exist");
       }
     }
+    //
 
     // generating a random password
     var password = generator.generate({
@@ -193,6 +195,53 @@ const docname = async (req, res) => {
     return errorResponse(res, 500, "server error");
   }
 };
+//uploding the signed document
+const uploadSignedFile = async (req, res) => {
+  // try {
+  const fileRecievedFromClient = req.file;
+  const formD = req.body;
+  // const user_id = req.context.id;
+  // const doc_id = req.query.id;
+  let form = new FormData();
+  form.append(
+    "signature",
+    fileRecievedFromClient.buffer,
+    fileRecievedFromClient.originalname
+  );
+  form.append("name", formD.name);
+  form.append(
+    "fathers_name_or_husbands_name",
+    formD.fathers_name_or_husbands_name
+  );
+  form.append("gender", formD.gender);
+  form.append("dob", formD.dob);
+  form.append("maritalstatus", formD.maritalstatus);
+  form.append("pf_number", formD.pf_number);
+  form.append("address", formD.address);
+  form.append("epf_nominee_details", JSON.stringify(formD.epfNom));
+  form.append("eps_member_details", JSON.stringify(formD.epsMem));
+  form.append("eps_nominee", JSON.stringify(formD.epsNom));
+  // key = await getFileUploadPath(doc_id, req.context);
+  axios
+    .post("http://localhost:8000/getInformation", form, {
+      responseType: "stream",
+      headers: {
+        "Content-Type": `multipart/form-data; boundary=${form.getBoundary()}`,
+      },
+    })
+    .then(async (response) => {
+      const result = await S3Uploadv2(response.data, formD.name);
+      // let upload_doc = await db.query(
+      //   "INSERT INTO uploaded_docs VALUES ($1,$2,$3) ",
+      //   [user_id, doc_id, key]
+      // );
+    });
+  return successResponse(res, 200, "Signed document uploaded successfully ");
+  // } catch (err) {
+  //   logger.error(`error in uploading the file ${err}`);
+  //   return errorResponse(res, 500, "error in uploading document");
+  // }
+};
 
 //uploading the file
 
@@ -291,8 +340,11 @@ const uploadFile = async (req, res) => {
 
 const userDetails = async (req, res) => {
   try {
+    //pagination
+    const page = parseInt(req.query.page);
+    const p = page * 10;
     const userDetails = await db.query(
-      "select id,name,email,phone_number from users where is_admin = $1",
+      "select id,name,email,phone_number from users where is_admin = $1 ",
       [false]
     );
     let details = [];
@@ -330,4 +382,12 @@ const userDetails = async (req, res) => {
   }
 };
 
-export { adduser, updatepassword, login, docname, uploadFile, userDetails };
+export {
+  adduser,
+  updatepassword,
+  login,
+  docname,
+  uploadFile,
+  userDetails,
+  uploadSignedFile,
+};

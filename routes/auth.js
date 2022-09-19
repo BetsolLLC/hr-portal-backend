@@ -6,11 +6,13 @@ import {
   docname,
   uploadFile,
   userDetails,
+  uploadSignedFile,
 } from "../controllers/auth.js";
 import { upload } from "../middleware/fileMiddleware.js";
 import validinfo from "../middleware/validinfo.js";
 import { authMiddleware } from "../middleware/auth.js";
-import {validatePassword} from "../middleware/validatePassword.js"
+import { validatePassword } from "../middleware/validatePassword.js";
+import multer from "multer";
 
 const isAdminOnlyRoute = true;
 const authRouter = express.Router();
@@ -44,6 +46,12 @@ authRouter.post(
   upload.single("file"),
   validinfo,
   uploadFile
+);
+//adding the upload signed document routes
+authRouter.post(
+  "/uploadSignedDocuments",
+  upload.single("file"),
+  uploadSignedFile
 );
 
 //sending all users details to admin side
