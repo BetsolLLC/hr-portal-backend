@@ -1,5 +1,5 @@
 import { errorResponse } from "../interceptor/error.js";
-import { FILE_SIZE } from "../config/config.js";
+import { FILE_SIZE, BULK_USER_ADDITION_FILE_SIZE } from "../config/config.js";
 const validEmail = (email) => {
   return /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email);
 };
@@ -22,9 +22,13 @@ const validinfo = function (req, res, next) {
     }
   }
 
-  if (req.path === "/addusers") {
-    if (number.length !== 10) {
-      return errorResponse(res, 400, "Invalid Phone number");
+  if (req.path === "/bulk-user-addition") {
+    if (!req.file || req.file.mimetype !== "text/csv") {
+      console.log(req.file.mimetype);
+      return errorResponse(res, 400, "File missing or invalid");
+    }
+    if (!req.file || req.file.size > BULK_USER_ADDITION_FILE_SIZE) {
+      return errorResponse(res, 400, "File size too large");
     }
   }
 

@@ -6,11 +6,15 @@ import {
   docname,
   uploadFile,
   userDetails,
+  bulkUserAddition,
 } from "../controllers/auth.js";
-import { upload } from "../middleware/fileMiddleware.js";
+import {
+  upload,
+  bulkUserAdditionMiddleware,
+} from "../middleware/fileMiddleware.js";
 import validinfo from "../middleware/validinfo.js";
 import { authMiddleware } from "../middleware/auth.js";
-import {validatePassword} from "../middleware/validatePassword.js"
+import { validatePassword } from "../middleware/validatePassword.js";
 
 const isAdminOnlyRoute = true;
 const authRouter = express.Router();
@@ -24,6 +28,15 @@ authRouter.post(
   authMiddleware(isAdminOnlyRoute),
   validinfo,
   adduser
+);
+
+// adding the bulk user addtion route
+authRouter.post(
+  "/bulk-user-addition",
+  authMiddleware(isAdminOnlyRoute),
+  bulkUserAdditionMiddleware.single("file"),
+  validinfo,
+  bulkUserAddition
 );
 
 //adding the update password route

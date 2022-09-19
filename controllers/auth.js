@@ -1,78 +1,87 @@
 import db from "../db.js";
 import bcrypt from "bcrypt";
-import generator from "generate-password";
 import jwtGenerator from "../utils/jwtGenerator.js";
 import { logger } from "../logger.js";
-import { ROLES, SALT, AWS_BUCKET } from "../config/config.js";
+import { ROLES, SALT, BULK_USER_ADDITION_COUNT } from "../config/config.js";
 import { successResponse } from "../interceptor/success.js";
 import { errorResponse } from "../interceptor/error.js";
 import { S3Uploadv2 } from "../service/s3.js";
-import { getFileUploadPath } from "./helper.js";
-import { mailer, mailerAdmin } from "../service/mailer.js";
+import {
+  getFileUploadPath,
+  addUserUtility,
+  isEmailValid,
+  isPhoneNumberValid,
+  isDateValid,
+} from "./helper.js";
+import { mailerAdmin } from "../service/mailer.js";
+import csv from "fast-csv";
 
 const adduser = async (req, res) => {
   logger.defaultMeta = { ...logger.defaultMeta, source: "controller.adduser" };
   let { name, email, batch, number } = req.body;
+
   if (name === "" || name === null) {
     name = email;
   }
 
   try {
-    // checking the user already exist
-    {
-      const user = await db.query("SELECT * FROM users WHERE email = $1", [
-        email,
-      ]);
-
-      if (user.rows.length > 0) {
-        logger.debug(`user with email(${email}) is exists`);
-        return errorResponse(res, 409, "user already exist");
-      }
+    const r = await addUserUtility(name, email, batch, number);
+    if (r.statusCode !== 201) {
+      return errorResponse(res, r.statusCode, r.errorMsg);
     }
 
-    // generating a random password
-    var password = generator.generate({
-      length: 10,
-      numbers: true,
-    });
-
-    // only for development purpose this needs to removed later
-    //console.log(password);
-
-    // hashing password
-    const salt = await bcrypt.genSalt(SALT);
-    const bcryptPassword = await bcrypt.hash(password, salt);
-
-    // adding user to DB
-    const newUser = await db.query(
-      "INSERT INTO users (name,email,batch,phone_number,password) VALUES ($1,$2,$3,$4,$5)",
-      [name, email, batch, number, bcryptPassword]
-    );
-    //using email as id in the token as id is not awailable
-    const token = jwtGenerator(email, name, batch, email, ROLES.END_USER);
-    logger.debug(`user(${email}) add successfully`);
-    const isMailSent = await mailer(name, email, token, password);
-    if (!isMailSent) {
-      logger.debug(`error sending  creadential mail to user: ${email}`);
-      try {
-        await db.query("DELETE FROM users WHERE email = $1", [email]);
-      } catch (err) {
-        logger.debug(`error deleting user: ${email} from DB`);
-        return errorResponse(res, 500, `error adding user`);
-      }
-
-      logger.debug(`deleted user${email} from DB`);
-      return errorResponse(res, 500, `error adding user`);
-    } else {
-      logger.debug(
-        `Credential mail sent to (${email}) successfully ${isMailSent}`
-      );
-    }
-    return successResponse(res, 201, "user added");
+    return successResponse(res, r.statusCode, r.successMsg);
   } catch (err) {
     logger.error(`error adding user: ${err}`);
     return errorResponse(res, 500, "error adding user");
   }
+};
+
+const bulkUserAddition = async (req, res) => {
+  logger.defaultMeta = {
+    ...logger.defaultMeta,
+    source: "controller.bulkUserAddition",
+  };
+
+  csv
+    .parseString(req.file.buffer, {
+      headers: true,
+      ignoreEmpty: true,
+      trim: true,
+      maxRows: BULK_USER_ADDITION_COUNT,
+    })
+    .on("data", (row) => {
+      console.log(row.Name, row.Email, row.PhoneNumber, row.DateOfJoining);
+
+      // record validation
+      {
+        if (!isEmailValid(row.Email)) {
+          logger.debug(`invalid email ${row.Email}`);
+        }
+
+        if (!isDateValid(row.Email)) {
+          logger.debug(
+            `invalid DOJ ${row.DateOfJoining} for user ${row.Email}`
+          );
+        }
+
+        if (!isPhoneNumberValid(row.PhoneNumber)) {
+          logger.debug(
+            `invalid phone number ${row.PhoneNumber} for user ${row.Email}`
+          );
+        }
+      }
+
+      addUserUtility(row.Name, row.Email, row.DateOfJoining, row.PhoneNumber);
+    })
+    .on("error", (error) => {
+      throw error.message;
+    })
+    .on("end", (count) => {
+      logger.debug(`validated ${count} user records in csv`);
+    });
+
+  res.status(200).json("Bulk user addition request is being processed");
 };
 
 const login = async (req, res) => {
@@ -195,7 +204,6 @@ const docname = async (req, res) => {
 };
 
 //uploading the file
-
 const uploadFile = async (req, res) => {
   try {
     const file = req.file;
@@ -330,4 +338,12 @@ const userDetails = async (req, res) => {
   }
 };
 
-export { adduser, updatepassword, login, docname, uploadFile, userDetails };
+export {
+  adduser,
+  updatepassword,
+  login,
+  docname,
+  uploadFile,
+  userDetails,
+  bulkUserAddition,
+};

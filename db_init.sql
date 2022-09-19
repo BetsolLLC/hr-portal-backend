@@ -4,7 +4,7 @@ CREATE TABLE public.users (
     "name" text NOT NULL,
     email text NOT NULL,
     phone_number varchar(10) NOT NULL,
-    batch smallint NOT NULL,
+    batch date NOT NULL,
     password varchar(255) NOT null,
     uploaded_pre_on_board_docs bool NULL DEFAULT false,
     uploaded_on_board_docs bool NULL DEFAULT false,
@@ -46,6 +46,7 @@ CREATE TABLE public.uploaded_docs (
     CONSTRAINT uploaded_docs_fk_1 FOREIGN KEY (all_docs_id) REFERENCES public.all_docs(id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 CREATE INDEX uploaded_docs_user_id_idx ON public.uploaded_docs (user_id);
+
 -- SEED data for public.doc_type
 INSERT INTO public.doc_type (id,doc_type_name,total) VALUES (1,'pre_on_boarding',10);
 INSERT INTO public.doc_type (id,doc_type_name,total) VALUES (2,'on_boarding', 11);
