@@ -210,16 +210,16 @@ const uploadSignedFile = async (req, res) => {
       fileRecievedFromClient.buffer,
       fileRecievedFromClient.originalname
     );
-    form.append("name", formD.name);
+    form.append("name", formD.basicDetails.name);
     form.append(
       "fathers_name_or_husbands_name",
-      formD.fathers_name_or_husbands_name
+      formD.basicDetails.fathers_name_or_husbands_name
     );
-    form.append("gender", formD.gender);
-    form.append("dob", formD.dob);
-    form.append("maritalstatus", formD.maritalstatus);
-    form.append("pf_number", formD.pf_number);
-    form.append("address", formD.address);
+    form.append("gender", formD.basicDetails.gender);
+    form.append("dob", formD.basicDetails.dob);
+    form.append("maritalstatus", formD.basicDetails.maritalstatus);
+    form.append("pf_number", formD.basicDetails.pf_number);
+    form.append("address", formD.basicDetails.address);
     form.append("epf_nominee_details", JSON.stringify(formD.epfNom));
     form.append("eps_member_details", JSON.stringify(formD.epsMem));
     form.append("eps_nominee", JSON.stringify(formD.epsNom));
