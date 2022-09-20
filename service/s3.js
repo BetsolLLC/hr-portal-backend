@@ -9,7 +9,7 @@ const S3Uploadv2 = async (file, key) => {
   const param = {
     Bucket: AWS_BUCKET,
     Key: key,
-    Body: file,
+    Body: file, //file.buffer
   };
   return s3.upload(param).promise();
 };

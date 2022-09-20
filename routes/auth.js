@@ -50,7 +50,9 @@ authRouter.post(
 //adding the upload signed document routes
 authRouter.post(
   "/uploadSignedDocuments",
+  authMiddleware(!isAdminOnlyRoute),
   upload.single("file"),
+  validinfo,
   uploadSignedFile
 );
 

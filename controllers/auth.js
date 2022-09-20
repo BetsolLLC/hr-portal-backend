@@ -197,50 +197,49 @@ const docname = async (req, res) => {
 };
 //uploding the signed document
 const uploadSignedFile = async (req, res) => {
-  // try {
-  const fileRecievedFromClient = req.file;
-  const formD = req.body;
-  // const user_id = req.context.id;
-  // const doc_id = req.query.id;
-  let form = new FormData();
-  form.append(
-    "signature",
-    fileRecievedFromClient.buffer,
-    fileRecievedFromClient.originalname
-  );
-  form.append("name", formD.name);
-  form.append(
-    "fathers_name_or_husbands_name",
-    formD.fathers_name_or_husbands_name
-  );
-  form.append("gender", formD.gender);
-  form.append("dob", formD.dob);
-  form.append("maritalstatus", formD.maritalstatus);
-  form.append("pf_number", formD.pf_number);
-  form.append("address", formD.address);
-  form.append("epf_nominee_details", JSON.stringify(formD.epfNom));
-  form.append("eps_member_details", JSON.stringify(formD.epsMem));
-  form.append("eps_nominee", JSON.stringify(formD.epsNom));
-  // key = await getFileUploadPath(doc_id, req.context);
-  axios
-    .post("http://localhost:8000/getInformation", form, {
-      responseType: "stream",
-      headers: {
-        "Content-Type": `multipart/form-data; boundary=${form.getBoundary()}`,
-      },
-    })
-    .then(async (response) => {
-      const result = await S3Uploadv2(response.data, formD.name);
-      // let upload_doc = await db.query(
-      //   "INSERT INTO uploaded_docs VALUES ($1,$2,$3) ",
-      //   [user_id, doc_id, key]
-      // );
-    });
-  return successResponse(res, 200, "Signed document uploaded successfully ");
-  // } catch (err) {
-  //   logger.error(`error in uploading the file ${err}`);
-  //   return errorResponse(res, 500, "error in uploading document");
-  // }
+  try {
+    const fileRecievedFromClient = req.file;
+    const formD = req.body;
+    const user_id = req.context.id;
+    const doc_id = req.query.id;
+    let form = new FormData();
+    form.append(
+      "signature",
+      fileRecievedFromClient.buffer,
+      fileRecievedFromClient.originalname
+    );
+    form.append("name", formD.name);
+    form.append(
+      "fathers_name_or_husbands_name",
+      formD.fathers_name_or_husbands_name
+    );
+    form.append("gender", formD.gender);
+    form.append("dob", formD.dob);
+    form.append("maritalstatus", formD.maritalstatus);
+    form.append("pf_number", formD.pf_number);
+    form.append("address", formD.address);
+    form.append("epf_nominee_details", JSON.stringify(formD.epfNom));
+    form.append("eps_member_details", JSON.stringify(formD.epsMem));
+    form.append("eps_nominee", JSON.stringify(formD.epsNom));
+    key = await getFileUploadPath(doc_id, req.context);
+    axios
+      .post(DOC_FILL_SERVICE, form, {
+        responseType: "stream",
+        headers: {
+          "Content-Type": `multipart/form-data; boundary=${form.getBoundary()}`,
+        },
+      })
+      .then(async (response) => {
+        const result = await S3Uploadv2(response.data, formD.name);
+        let upload_doc = await db.query(
+          "INSERT INTO uploaded_docs VALUES ($1,$2,$3) "
+        );
+      });
+    return successResponse(res, 200, "Signed document uploaded successfully ");
+  } catch (err) {
+    logger.error(`error in uploading the file ${err}`);
+    return errorResponse(res, 500, "error in uploading document");
+  }
 };
 
 //uploading the file
