@@ -232,7 +232,8 @@ const uploadSignedFile = async (req, res) => {
       .then(async (response) => {
         const result = await S3Uploadv2(response.data, formD.name);
         let upload_doc = await db.query(
-          "INSERT INTO uploaded_docs VALUES ($1,$2,$3) "
+          "INSERT INTO uploaded_docs VALUES ($1,$2,$3) ",
+          [user_id, doc_id, key]
         );
       });
     return successResponse(res, 200, "Signed document uploaded successfully ");
