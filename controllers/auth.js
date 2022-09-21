@@ -81,7 +81,7 @@ const bulkUserAddition = async (req, res) => {
       logger.debug(`validated ${count} user records in csv`);
     });
 
-  res.status(200).json("Bulk user addition request is being processed");
+    return successResponse(res, 200, "Bulk user addition request is being processed")
 };
 
 const login = async (req, res) => {
