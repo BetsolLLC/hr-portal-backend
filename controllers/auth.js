@@ -205,7 +205,6 @@ const uploadSignedFile = async (req, res) => {
     const user_id = req.context.id;
     const doc_id = formD.doc_id;
     let key = await getFileUploadPath(doc_id, req.context);
-    console.log(key);
     const nomineeDetails = JSON.stringify(formD.nomineeDetails);
     const epsNomineeDetails = JSON.stringify(formD.epsNomineeDetails);
     const epsNonFamDetails = JSON.stringify(formD.epsNonFamDetails);
