@@ -27,6 +27,20 @@ const validinfo = function (req, res, next) {
       return errorResponse(res, 400, "Invalid Phone number");
     }
   }
+  //Checking if file is uploaded
+
+  //"
+  if (req.path === "/uploadSignedDocuments") {
+    if (
+      (!req.file && req.file.mimetype != "image/jpeg") ||
+      (!req.file && req.file.mimetype != "image/png")
+    ) {
+      return errorResponse(res, 400, "File missing or invalid");
+    }
+    if (!req.file || req.file.size > FILE_SIZE) {
+      return errorResponse(res, 400, "File size is greater than 1MB");
+    }
+  }
 
   next();
 };
