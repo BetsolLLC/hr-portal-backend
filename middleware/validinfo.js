@@ -29,9 +29,12 @@ const validinfo = function (req, res, next) {
   }
   //Checking if file is uploaded
 
-  //req.file.mimetype != "image/jpeg" ||req.file.mimetype != "image/png"
+  //"
   if (req.path === "/uploadSignedDocuments") {
-    if (!req.file) {
+    if (
+      (!req.file && req.file.mimetype != "image/jpeg") ||
+      (!req.file && req.file.mimetype != "image/png")
+    ) {
       return errorResponse(res, 400, "File missing or invalid");
     }
     if (!req.file || req.file.size > FILE_SIZE) {

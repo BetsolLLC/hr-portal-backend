@@ -345,9 +345,6 @@ const uploadFile = async (req, res) => {
 
 const userDetails = async (req, res) => {
   try {
-    //pagination
-    const page = parseInt(req.query.page);
-    const p = page * 10;
     const userDetails = await db.query(
       "select id,name,email,phone_number from users where is_admin = $1 ",
       [false]
