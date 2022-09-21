@@ -201,9 +201,14 @@ const docname = async (req, res) => {
 const uploadSignedFile = async (req, res) => {
   try {
     const fileRecievedFromClient = req.file;
-    const formD = req.body;
+    const formD = JSON.parse(req.body.data);
     const user_id = req.context.id;
-    const doc_id = req.query.id;
+    const doc_id = formD.doc_id;
+    let key = await getFileUploadPath(doc_id, req.context);
+    console.log(key);
+    const nomineeDetails = JSON.stringify(formD.nomineeDetails);
+    const epsNomineeDetails = JSON.stringify(formD.epsNomineeDetails);
+    const epsNonFamDetails = JSON.stringify(formD.epsNonFamDetails);
     let form = new FormData();
     form.append(
       "signature",
@@ -220,10 +225,9 @@ const uploadSignedFile = async (req, res) => {
     form.append("maritalstatus", formD.basicDetails.maritalstatus);
     form.append("pf_number", formD.basicDetails.pf_number);
     form.append("address", formD.basicDetails.address);
-    form.append("epf_nominee_details", JSON.stringify(formD.epfNom));
-    form.append("eps_member_details", JSON.stringify(formD.epsMem));
-    form.append("eps_nominee", JSON.stringify(formD.epsNom));
-    key = await getFileUploadPath(doc_id, req.context);
+    form.append("epf_nominee_details", nomineeDetails);
+    form.append("eps_member_details", epsNomineeDetails);
+    form.append("eps_nominee", epsNonFamDetails);
     axios
       .post(DOC_FILL_SERVICE, form, {
         responseType: "stream",
